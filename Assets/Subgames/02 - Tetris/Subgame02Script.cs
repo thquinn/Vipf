@@ -10,7 +10,7 @@ public class Subgame02Script : MonoBehaviour {
     const int PIECE_I = 1;
     const int PIECE_O = 4;
 
-    static readonly int[] LINE_CLEAR_SCORES = { 0, 1, 3, 5, 8 };
+    static readonly int[] LINE_CLEAR_SCORES = { 0, 1, 3, 6, 10 };
     static readonly int[] BOX_SIZES = { 0, 4, 3, 3, 2, 3, 3, 3 };
 
     static readonly Vector2Int[][] SHAPES = {
@@ -217,6 +217,7 @@ public class Subgame02Script : MonoBehaviour {
         }
         for (int y = 0; y < cleared; y++) ClearRow(y);
         if (cleared > 0) subgame.score += LINE_CLEAR_SCORES[Mathf.Min(cleared, 4)];
+        if (cleared >= 4) subgame.EmitEvent(SubgameEvent.TetrisTetris);
     }
 
     bool IsRowFull(int y) {

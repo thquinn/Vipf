@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -6,6 +7,8 @@ using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 
 public class SubgameBaseScript : MonoBehaviour {
+    public static event Action<SubgameEvent, HandheldScript> OnSubgameEvent;
+
     static Key[] ANY_KEY = new Key[] { Key.LeftArrow, Key.RightArrow, Key.UpArrow, Key.DownArrow, Key.Z, Key.X };
 
     public Camera cam;
@@ -81,8 +84,15 @@ public class SubgameBaseScript : MonoBehaviour {
     public void PlaySFX(AudioClip sfx) {
         handheldScript.audioSourceBGM.PlayOneShot(sfx);
     }
+
+    public void EmitEvent(SubgameEvent e) {
+        OnSubgameEvent?.Invoke(e, handheldScript);
+    }
 }
 
 public enum SubgameID {
     None, Rhythm, Tetris
+}
+public enum SubgameEvent {
+    None, TetrisTetris
 }

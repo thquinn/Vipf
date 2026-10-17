@@ -6,7 +6,10 @@ using UnityEngine.UI;
 public static class Util {
     public static Collider GetCameraCollider(Camera camera, LayerMask layerMask, float maxDistance = Mathf.Infinity) {
         Ray ray = camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        return Physics.Raycast(ray, out RaycastHit hit, maxDistance, layerMask) ? hit.collider : null;
+        bool didHit = Physics.Raycast(ray, out RaycastHit hit, maxDistance, layerMask);
+        var handheld = hit.collider?.GetComponent<HandheldScript>();
+        Debug.DrawRay(ray.origin, ray.direction * 100f, handheld != null ? Color.green : Color.red, 10);
+        return didHit ? hit.collider : null;
     }
 
     public static void SetAlpha(this SpriteRenderer sr, float a) {

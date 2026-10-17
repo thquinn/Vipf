@@ -3,6 +3,8 @@ using UnityEngine.Diagnostics;
 using UnityEngine.InputSystem;
 
 public class PlayerScript : MonoBehaviour {
+    public static PlayerScript instance;
+
     static float MOVE_SPEED = 5;
     static float MOVE_DECAY = 10;
     static float LOOK_SENSITIVITY = 0.2f * (Application.platform == RuntimePlatform.WebGLPlayer ? 1 : 1);
@@ -13,20 +15,22 @@ public class PlayerScript : MonoBehaviour {
     public LayerMask layerMaskGrab;
     
     InputSystem_Actions input;
-    HandheldScript handheldScript;
+    Vector3 initialHeadPosition, vHead;
+    public HandheldScript grabbedHandheld;
     Vector3 handheldInitialPosition;
     Quaternion handheldInitialRotation;
     float handheldGrabAnimT;
 
     void Start() {
+        instance = this;
         input = new InputSystem_Actions();
         input.Player.Enable();
         Cursor.lockState = CursorLockMode.Locked;
+        initialHeadPosition = transformHead.localPosition;
     }
 
     void Update() {
         UpdateLook();
-        
     }
     void LateUpdate() {
         UpdateGrab();
@@ -55,36 +59,38 @@ public class PlayerScript : MonoBehaviour {
             0,
             Mathf.Lerp(rb.linearVelocity.z, inputVelocity.z, t)
         );
+        Vector3 targetHeadPosition = Keyboard.current.leftCtrlKey.isPressed ? initialHeadPosition / 2 : initialHeadPosition;
+        transformHead.localPosition = Vector3.SmoothDamp(transformHead.localPosition, targetHeadPosition, ref vHead, 0.1f);
     }
 
     void UpdateGrab() {
-        if (handheldScript != null) {
+        if (grabbedHandheld != null) {
             handheldGrabAnimT = Mathf.Clamp01(handheldGrabAnimT + Time.deltaTime * 6f);
             float t = handheldGrabAnimT;
-            handheldScript.transform.position = Vector3.Lerp(handheldInitialPosition, transformHandheldAnchor.transform.position, t);
-            handheldScript.transform.rotation = Quaternion.Lerp(handheldInitialRotation, transformHandheldAnchor.transform.rotation, t);
+            grabbedHandheld.transform.position = Vector3.Lerp(handheldInitialPosition, transformHandheldAnchor.transform.position, t);
+            grabbedHandheld.transform.rotation = Quaternion.Lerp(handheldInitialRotation, transformHandheldAnchor.transform.rotation, t);
         }
 
         // Grabbing and dropping.
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
-        if (handheldScript != null) {
+        if (grabbedHandheld != null) {
             // Drop.
-            handheldScript.GetComponent<Rigidbody>().isKinematic = false;
-            handheldScript.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward;
-            handheldScript.isHeld = false;
-            handheldScript = null;
+            grabbedHandheld.GetComponent<Rigidbody>().isKinematic = false;
+            grabbedHandheld.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward * 2;
+            grabbedHandheld.isHeld = false;
+            grabbedHandheld = null;
         } else {
             // Grab.
-            handheldScript = Util.GetCameraCollider(cam, layerMaskGrab)?.GetComponent<HandheldScript>();
-            if (handheldScript != null) {
-                Rigidbody handheldRB = handheldScript.GetComponent<Rigidbody>();
+            grabbedHandheld = Util.GetCameraCollider(cam, layerMaskGrab, 1.5f)?.GetComponent<HandheldScript>();
+            if (grabbedHandheld != null) {
+                Rigidbody handheldRB = grabbedHandheld.GetComponent<Rigidbody>();
                 handheldRB.linearVelocity = Vector3.zero;
                 handheldRB.angularVelocity = Vector3.zero;
                 handheldRB.isKinematic = true;
-                handheldInitialPosition = handheldScript.transform.position;
-                handheldInitialRotation = handheldScript.transform.rotation;
+                handheldInitialPosition = grabbedHandheld.transform.position;
+                handheldInitialRotation = grabbedHandheld.transform.rotation;
                 handheldGrabAnimT = 0;
-                handheldScript.isHeld = true;
+                grabbedHandheld.isHeld = true;
             }
         }
     }
