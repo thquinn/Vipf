@@ -1,8 +1,9 @@
 using UnityEngine;
 
 public class HandheldScript : MonoBehaviour {
-    public Renderer screenRenderer;
     public SubgameBaseScript subgame;
+    public Renderer screenRenderer;
+    public AudioSource audioSourceBGM, audioSourceSFX;
 
     [HideInInspector] public bool isHeld;
     RenderTexture rt;
@@ -14,6 +15,7 @@ public class HandheldScript : MonoBehaviour {
             useMipMap = false
         };
         rt.Create();
+        subgame.cam.gameObject.SetActive(true);
         subgame.cam.targetTexture = rt;
 
         MaterialPropertyBlock block = new MaterialPropertyBlock();

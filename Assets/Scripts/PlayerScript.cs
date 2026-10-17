@@ -59,7 +59,7 @@ public class PlayerScript : MonoBehaviour {
 
     void UpdateGrab() {
         if (handheldScript != null) {
-            handheldGrabAnimT = Mathf.Clamp01(handheldGrabAnimT + Time.deltaTime * 4f);
+            handheldGrabAnimT = Mathf.Clamp01(handheldGrabAnimT + Time.deltaTime * 6f);
             float t = handheldGrabAnimT;
             handheldScript.transform.position = Vector3.Lerp(handheldInitialPosition, transformHandheldAnchor.transform.position, t);
             handheldScript.transform.rotation = Quaternion.Lerp(handheldInitialRotation, transformHandheldAnchor.transform.rotation, t);
@@ -78,6 +78,9 @@ public class PlayerScript : MonoBehaviour {
             handheldScript = Util.GetCameraCollider(cam, layerMaskHandheld)?.GetComponent<HandheldScript>();
             if (handheldScript != null) {
                 handheldScript.GetComponent<Collider>().enabled = false;
+                Rigidbody handheldRB = handheldScript.GetComponent<Rigidbody>();
+                handheldRB.linearVelocity = Vector3.zero;
+                handheldRB.angularVelocity = Vector3.zero;
                 handheldInitialPosition = handheldScript.transform.position;
                 handheldInitialRotation = handheldScript.transform.rotation;
                 handheldGrabAnimT = 0;
