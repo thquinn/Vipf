@@ -9,6 +9,7 @@ public class SubgameBaseScript : MonoBehaviour {
 
     public Camera cam;
     public TMP_Text tmpScore, tmpGameOver;
+    public GameObject gameOverContainer;
 
     [HideInInspector] public HandheldScript handheldScript;
     [HideInInspector] public int score;
@@ -24,7 +25,11 @@ public class SubgameBaseScript : MonoBehaviour {
     void Update() {
         tmpScore.gameObject.SetActive(!isGameOver);
         tmpScore.text = score.ToString();
-        tmpGameOver.gameObject.SetActive(isGameOver);
+        gameOverContainer.SetActive(isGameOver);
+    }
+
+    public void AddPoints(int amount) {
+        score += amount;
     }
 
     public void GameOver() {
