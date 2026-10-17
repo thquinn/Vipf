@@ -7,7 +7,7 @@ public class HandheldScript : MonoBehaviour {
     RenderTexture rt;
 
     void Start() {
-        rt = new RenderTexture(120, 90, 24, RenderTextureFormat.ARGB32) {
+        rt = new RenderTexture(240, 180, 24, RenderTextureFormat.ARGB32) {
             filterMode = FilterMode.Point,
             useMipMap = false
         };
