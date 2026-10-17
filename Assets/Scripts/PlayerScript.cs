@@ -10,7 +10,7 @@ public class PlayerScript : MonoBehaviour {
     public Transform transformHead, transformHandheldAnchor;
     public Camera cam;
     public Rigidbody rb;
-    public LayerMask layerMaskHandheld;
+    public LayerMask layerMaskGrab;
     
     InputSystem_Actions input;
     HandheldScript handheldScript;
@@ -69,15 +69,15 @@ public class PlayerScript : MonoBehaviour {
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
         if (handheldScript != null) {
             // Drop.
-            handheldScript.GetComponent<Collider>().enabled = true;
+            handheldScript.GetComponent<Rigidbody>().isKinematic = false;
             handheldScript.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward;
             handheldScript.isHeld = false;
             handheldScript = null;
         } else {
             // Grab.
-            handheldScript = Util.GetCameraCollider(cam, layerMaskHandheld)?.GetComponent<HandheldScript>();
+            handheldScript = Util.GetCameraCollider(cam, layerMaskGrab)?.GetComponent<HandheldScript>();
             if (handheldScript != null) {
-                handheldScript.GetComponent<Collider>().enabled = false;
+                handheldScript.GetComponent<Rigidbody>().isKinematic = true;
                 Rigidbody handheldRB = handheldScript.GetComponent<Rigidbody>();
                 handheldRB.linearVelocity = Vector3.zero;
                 handheldRB.angularVelocity = Vector3.zero;

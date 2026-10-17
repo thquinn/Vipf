@@ -110,8 +110,8 @@ public class Subgame01Script : MonoBehaviour {
         if (lastBeat != NO_BEAT) {
             double secondsPerBeat = 60.0 / BGM_TEMPO;
             double loopBeats = loopLength / secondsPerBeat;
-            double lastLookahead = (lastBeat + LOOKAHEAD_BEATS) % loopBeats;
-            double lookahead = (beat + LOOKAHEAD_BEATS) % loopBeats;
+            double lastLookahead = (lastBeat + LOOKAHEAD_BEATS) % (loopBeats - 0.00001);
+            double lookahead = (beat + LOOKAHEAD_BEATS) % (loopBeats - 0.00001);
             foreach (double songBeat in BEATS) {
                 if (lastLookahead > lookahead && lookahead >= songBeat) {
                     // Wraparound beats at start of song.
@@ -121,6 +121,8 @@ public class Subgame01Script : MonoBehaviour {
                     notes.Add(note);
                 } else if (lastLookahead < songBeat && lookahead >= songBeat) {
                     float timeUntilBeat = (float)((songBeat - beat) * secondsPerBeat);
+                    if (timeUntilBeat < 0) timeUntilBeat += (float)loopLength;
+                    if (timeUntilBeat > 10) timeUntilBeat -= (float)loopLength;
                     Subgame01NoteScript note = Instantiate(prefabNote, transformNotes).GetComponent<Subgame01NoteScript>();
                     note.Init(Time.time + timeUntilBeat);
                     notes.Add(note);

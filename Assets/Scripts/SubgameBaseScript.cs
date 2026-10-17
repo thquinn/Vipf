@@ -66,3 +66,7 @@ public class SubgameBaseScript : MonoBehaviour {
         handheldScript.audioSourceBGM.PlayOneShot(sfx);
     }
 }
+
+public enum SubgameID {
+    None, Rhythm
+}
