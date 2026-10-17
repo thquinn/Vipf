@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -52,10 +53,25 @@ public class SubgameBaseScript : MonoBehaviour {
         if (!handheldScript.isHeld) return false;
         return Keyboard.current[key].isPressed;
     }
+    Dictionary<Key, float> keyPressTimes = new();
+    static float KEY_REPEAT_DELAY = 0.5f;
+    static float KEY_REPEAT_TIME = 0.066f;
     public bool GetKeyDown(Key key) {
         Assert.IsTrue(ANY_KEY.Contains(key));
         if (!handheldScript.isHeld) return false;
-        return Keyboard.current[key].wasPressedThisFrame;
+        if (!Keyboard.current[key].isPressed) {
+            keyPressTimes.Remove(key);
+            return false;
+        }
+        if (Keyboard.current[key].wasPressedThisFrame) {
+            keyPressTimes[key] = Time.unscaledTime;
+        }
+        float oldT = Time.unscaledTime - keyPressTimes[key];
+        float newT = oldT + Time.unscaledDeltaTime;
+        if (oldT == 0) return true;
+        if (newT < KEY_REPEAT_DELAY) return false;
+        if (oldT < KEY_REPEAT_DELAY) return true;
+        return Mathf.FloorToInt((oldT - KEY_REPEAT_DELAY) / KEY_REPEAT_TIME) < Mathf.FloorToInt((newT - KEY_REPEAT_DELAY) / KEY_REPEAT_TIME);
     }
     
     public void PlayBGM(AudioClip bgm) {
@@ -68,5 +84,5 @@ public class SubgameBaseScript : MonoBehaviour {
 }
 
 public enum SubgameID {
-    None, Rhythm
+    None, Rhythm, Tetris
 }

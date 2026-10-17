@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,5 +51,18 @@ public static class Util {
         );
         currentVelocity = FromVector4(velocityVec);
         return Normalize(FromVector4(result));
+    }
+}
+
+public static class ListExtensions {
+    public static List<T> Shuffle<T>(this List<T> list) {
+        int n = list.Count;
+        for (int i = 0; i < n; i++) {
+            int r = i + UnityEngine.Random.Range(0, n - i);
+            T t = list[r];
+            list[r] = list[i];
+            list[i] = t;
+        }
+        return list;
     }
 }

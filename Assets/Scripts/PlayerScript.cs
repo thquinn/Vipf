@@ -77,10 +77,10 @@ public class PlayerScript : MonoBehaviour {
             // Grab.
             handheldScript = Util.GetCameraCollider(cam, layerMaskGrab)?.GetComponent<HandheldScript>();
             if (handheldScript != null) {
-                handheldScript.GetComponent<Rigidbody>().isKinematic = true;
                 Rigidbody handheldRB = handheldScript.GetComponent<Rigidbody>();
                 handheldRB.linearVelocity = Vector3.zero;
                 handheldRB.angularVelocity = Vector3.zero;
+                handheldRB.isKinematic = true;
                 handheldInitialPosition = handheldScript.transform.position;
                 handheldInitialRotation = handheldScript.transform.rotation;
                 handheldGrabAnimT = 0;
