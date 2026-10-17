@@ -71,6 +71,7 @@ public class PlayerScript : MonoBehaviour {
             // Drop.
             handheldScript.GetComponent<Collider>().enabled = true;
             handheldScript.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward;
+            handheldScript.isHeld = false;
             handheldScript = null;
         } else {
             // Grab.
@@ -80,6 +81,7 @@ public class PlayerScript : MonoBehaviour {
                 handheldInitialPosition = handheldScript.transform.position;
                 handheldInitialRotation = handheldScript.transform.rotation;
                 handheldGrabAnimT = 0;
+                handheldScript.isHeld = true;
             }
         }
     }

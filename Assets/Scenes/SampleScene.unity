@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 34445395}
   - component: {fileID: 34445394}
   - component: {fileID: 34445393}
+  - component: {fileID: 34445396}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -231,6 +232,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 34445391}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &34445396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34445391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fe9b92c42efa0419ead9ee9b505d0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &165020418
 GameObject:
   m_ObjectHideFlags: 0
@@ -666,7 +679,7 @@ GameObject:
   - component: {fileID: 612087773}
   - component: {fileID: 612087774}
   m_Layer: 0
-  m_Name: '000: Test'
+  m_Name: '00: Test'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1021,7 +1034,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1580483191}
   m_Layer: 0
-  m_Name: Games
+  m_Name: Subgames
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1208,7 +1221,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   screenRenderer: {fileID: 1478522584}
-  game: {fileID: 612087774}
+  subgame: {fileID: 0}
+  isHeld: 0
 --- !u!65 &1730793365
 BoxCollider:
   m_ObjectHideFlags: 0
