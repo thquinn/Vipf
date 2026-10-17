@@ -7,11 +7,16 @@ public class PlayerScript : MonoBehaviour {
     static float MOVE_DECAY = 10;
     static float LOOK_SENSITIVITY = 0.2f * (Application.platform == RuntimePlatform.WebGLPlayer ? 1 : 1);
 
-    public Transform transformHead;
+    public Transform transformHead, transformHandheldAnchor;
     public Camera cam;
     public Rigidbody rb;
+    public LayerMask layerMaskHandheld;
     
     InputSystem_Actions input;
+    HandheldScript handheldScript;
+    Vector3 handheldInitialPosition;
+    Quaternion handheldInitialRotation;
+    float handheldGrabAnimT;
 
     void Start() {
         input = new InputSystem_Actions();
@@ -21,11 +26,14 @@ public class PlayerScript : MonoBehaviour {
 
     void Update() {
         UpdateLook();
+        
+    }
+    void LateUpdate() {
+        UpdateGrab();
     }
     void FixedUpdate() {
         UpdateVelocity();
     }
-
 
     void UpdateLook() {
         Vector2 mouseDelta = Mouse.current.delta.ReadValue() * LOOK_SENSITIVITY;
@@ -49,4 +57,30 @@ public class PlayerScript : MonoBehaviour {
         );
     }
 
+    void UpdateGrab() {
+        if (handheldScript != null) {
+            handheldGrabAnimT = Mathf.Clamp01(handheldGrabAnimT + Time.deltaTime * 4f);
+            float t = handheldGrabAnimT;
+            handheldScript.transform.position = Vector3.Lerp(handheldInitialPosition, transformHandheldAnchor.transform.position, t);
+            handheldScript.transform.rotation = Quaternion.Lerp(handheldInitialRotation, transformHandheldAnchor.transform.rotation, t);
+        }
+
+        // Grabbing and dropping.
+        if (!Mouse.current.leftButton.wasPressedThisFrame) return;
+        if (handheldScript != null) {
+            // Drop.
+            handheldScript.GetComponent<Collider>().enabled = true;
+            handheldScript.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward;
+            handheldScript = null;
+        } else {
+            // Grab.
+            handheldScript = Util.GetCameraCollider(cam, layerMaskHandheld)?.GetComponent<HandheldScript>();
+            if (handheldScript != null) {
+                handheldScript.GetComponent<Collider>().enabled = false;
+                handheldInitialPosition = handheldScript.transform.position;
+                handheldInitialRotation = handheldScript.transform.rotation;
+                handheldGrabAnimT = 0;
+            }
+        }
+    }
 }
