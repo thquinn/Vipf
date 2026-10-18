@@ -2,12 +2,16 @@ using System.Linq;
 using UnityEngine;
 
 public class TapePlayerScript : MonoBehaviour {
+    public static TapePlayerScript instance;
+
     static Color COLOR_SUPERGREEN = new Color(3, 16, 0);
     static Color COLOR_SUPERRED = new Color(16, 0, 0);
 
+    public AudioClip finalClip;
+
     public MeshRenderer mrLED;
     public Transform transformLid;
-    public AudioSource audioSource;
+    public AudioSource audioSource, audioSourceUnfiltered;
     public AudioClip sfxLoad, sfxStop, sfxEject;
 
     TapePlayerState state;
@@ -19,6 +23,7 @@ public class TapePlayerScript : MonoBehaviour {
     MaterialPropertyBlock block;
 
     void Start() {
+        instance = this;
         initialLidRotation = transformLid.localRotation;
         transformLid.localRotation = Quaternion.identity;
         block = new MaterialPropertyBlock();
@@ -30,12 +35,15 @@ public class TapePlayerScript : MonoBehaviour {
             float stopPoint = Mathf.Max(0, audioSource.clip.length - 2);
             float nextTime = audioSource.time + Time.deltaTime;
             if (audioSource.time < stopPoint && nextTime >= stopPoint) {
-                audioSource.PlayOneShot(sfxStop, 0.5f);
+                audioSourceUnfiltered.PlayOneShot(sfxStop, 0.5f);
             }
         }
         if (state == TapePlayerState.Playing && !audioSource.isPlaying) {
             state = TapePlayerState.Stopping;
             stateTimer = 1;
+            if (audioSource.clip == finalClip) {
+                Invoke("Quit", 2);
+            }
         }
         if (stateTimer <= 0) {
             if (state == TapePlayerState.Loading) {
@@ -85,21 +93,25 @@ public class TapePlayerScript : MonoBehaviour {
         audioSource.clip = tapeScript.clip;
         state = TapePlayerState.Loading;
         stateTimer = 1;
-        audioSource.PlayOneShot(sfxLoad, 0.5f);
+        audioSourceUnfiltered.PlayOneShot(sfxLoad, 0.5f);
     }
 
     void Shoot() {
         Rigidbody tapeRB = tapeScript.GetComponent<Rigidbody>();
         tapeRB.isKinematic = false;
         tapeRB.linearVelocity = 5 * Vector3.up + -1 * transform.up;
-        tapeRB.angularVelocity = Random.onUnitSphere * 20;
+        tapeRB.angularVelocity = Random.onUnitSphere * 10;
         previousTapeScript = tapeScript;
         tapeScript = null;
-        audioSource.PlayOneShot(sfxEject, 0.25f);
+        audioSourceUnfiltered.PlayOneShot(sfxEject, 0.25f);
     }
     void Release() {
         Collider tapeCollider = previousTapeScript.GetComponent<Collider>();
         tapeCollider.enabled = true;
+    }
+
+    void Quit() {
+        Application.Quit();
     }
 }
 

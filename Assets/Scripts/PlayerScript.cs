@@ -1,4 +1,3 @@
-using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -84,7 +83,7 @@ public class PlayerScript : MonoBehaviour {
         } else {
             // Grab.
             float dotUp = Vector3.Dot(cam.transform.forward, Vector3.up);
-            float grabDistance = Mathf.Lerp(2, 1, Mathf.Clamp01(dotUp));
+            float grabDistance = Mathf.Lerp(2.25f, 1, Mathf.Clamp01(dotUp));
 
             grabbedGrabbable = Util.GetCameraCollider(cam, layerMaskGrab, grabDistance)?.GetComponent<GrabbableScript>();
             if (grabbedGrabbable != null) {

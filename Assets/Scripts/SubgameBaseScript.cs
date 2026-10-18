@@ -105,8 +105,8 @@ public class SubgameBaseScript : MonoBehaviour {
 }
 
 public enum SubgameID {
-    None, Rhythm, Tetris, Pong
+    None, Rhythm, Tetris, Pong, Jumper, Tictactic
 }
 public enum SubgameEvent {
-    None, PongZX, TetrisTetris, TetrisXClear, TetrisPentris
+    None, PongZX, TetrisTetris, TetrisXClear, TetrisPentris, JumperScoreThreshold
 }
