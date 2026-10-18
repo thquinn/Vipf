@@ -1,8 +1,11 @@
 using UnityEngine;
 
 public class GrabbableScript : MonoBehaviour {
-    [HideInInspector] public bool isHeld;
+    public Vector3 posOffset;
+    public Quaternion rotOffset = Quaternion.identity;
 
-    public virtual Vector3 GrabbedPositionOffset() { return Vector3.zero; }
-    public virtual Quaternion GrabbedRotationOffset() { return Quaternion.identity; }
+    public Vector3 GrabbedPositionOffset() { return posOffset; }
+    public Quaternion GrabbedRotationOffset() { return rotOffset; }
+
+    [HideInInspector] public bool isHeld;
 }

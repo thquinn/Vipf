@@ -1,0 +1,106 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class Subgame03Script : MonoBehaviour {
+    static float CONTACT_X = 5.375f, CONTACT_Y = 5.25f;
+    static float LOSE_X = 7f;
+    static float MAX_EXTENT_Y = 5.5f;
+    static float SPEED_DEFAULT = 6, SPEED_ENEMY_INCREMENT = 0.2f;
+    static float BOUNCE_DX_MULT = -1.1f;
+    static float BOUNCE_DY_MULT = 3f;
+    static float EXTENT_FUDGE = 0.25f;
+
+    public Transform ball, paddlePlayer, paddleEnemy;
+
+    SubgameBaseScript subgame;
+    Vector3 vBall;
+
+    void Start() {
+        subgame = GetComponentInParent<SubgameBaseScript>();
+        Restart();
+    }
+
+    void Update() {
+        if (subgame.ShouldRestart()) {
+            Restart();
+        }
+        if (subgame.isGameOver) return;
+
+        // Player paddle.
+        int dy = 0;
+        if (subgame.GetKey(Key.UpArrow)) dy++;
+        if (subgame.GetKey(Key.DownArrow)) dy--;
+        paddlePlayer.localPosition += new Vector3(0, dy * Time.deltaTime * SPEED_DEFAULT, 0);
+        ClampPaddlePosition(paddlePlayer);
+
+        // Enemy paddle.
+        float enemyToBall = ball.localPosition.y - paddleEnemy.localPosition.y;
+        float enemySpeed = SPEED_DEFAULT + subgame.score * SPEED_ENEMY_INCREMENT;
+        if (subgame.HasXPak()) enemySpeed *= 2;
+        float travel = Mathf.Min(Mathf.Abs(enemyToBall), Time.deltaTime * enemySpeed);
+        travel *= Mathf.Sign(enemyToBall);
+        paddleEnemy.localPosition += new Vector3(0, travel, 0);
+        ClampPaddlePosition(paddleEnemy);
+
+        Vector3 nextBallPosition = ball.localPosition + vBall * Time.deltaTime;
+        // Player paddle check.
+        if (ball.localPosition.x > -CONTACT_X && nextBallPosition.x <= -CONTACT_X) {
+            if (IsWithinExtents(ball.localPosition.y, paddlePlayer)) {
+                PerformBounce(paddlePlayer);
+            }
+        }
+        if (ball.localPosition.x < -LOSE_X) {
+            subgame.GameOver();
+        }
+        // Enemy paddle check.
+        if (ball.localPosition.x < CONTACT_X && nextBallPosition.x >= CONTACT_X) {
+            if (IsWithinExtents(ball.localPosition.y, paddleEnemy)) {
+                PerformBounce(paddleEnemy);
+            }
+        }
+        if (ball.localPosition.x > LOSE_X) {
+            subgame.AddPoints(1);
+            ResetBall(-1);
+        }
+        // Move ball.
+        ball.localPosition = ball.localPosition + vBall * Time.deltaTime;
+        if (ball.localPosition.y <= -CONTACT_Y && vBall.y < 0) {
+            vBall.y *= -1;
+        } else if (ball.localPosition.y >= CONTACT_Y && vBall.y > 0) {
+            vBall.y *= -1;
+        }
+    }
+
+    void Restart() {
+        ResetBall(1);
+    }
+    void ResetBall(int direction) {
+        ball.localPosition = Vector3.zero;
+        vBall = new Vector3(3 * direction, 1);
+    }
+
+    void ClampPaddlePosition(Transform paddle) {
+        Vector2 yExtents = GetYExtents(paddle);
+        if (yExtents.x < -MAX_EXTENT_Y) {
+            paddle.localPosition += new Vector3(0, -MAX_EXTENT_Y - yExtents.x, 0);
+        }
+        if (yExtents.y > MAX_EXTENT_Y) {
+            paddle.localPosition -= new Vector3(0, yExtents.y - MAX_EXTENT_Y, 0);
+        }
+    }
+    bool IsWithinExtents(float y, Transform paddle) {
+        Vector2 yExtents = GetYExtents(paddle);
+        return y >= yExtents.x && y <= yExtents.y;
+    }
+    Vector2 GetYExtents(Transform paddle) {
+        float radius = paddle.localScale.y;
+        return new Vector2(paddle.localPosition.y - radius / 2 - EXTENT_FUDGE, paddle.localPosition.y + radius / 2 + EXTENT_FUDGE);
+    }
+
+    void PerformBounce(Transform paddle) {
+        vBall.x *= BOUNCE_DX_MULT;
+        Vector2 yExtents = GetYExtents(paddle);
+        float normalizedContact = Mathf.InverseLerp(yExtents.x, yExtents.y, ball.localPosition.y) * 2 - 1;
+        vBall.y += normalizedContact * BOUNCE_DY_MULT;
+    }
+}

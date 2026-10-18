@@ -10,6 +10,7 @@ public class HandheldScript : GrabbableScript {
     public SpriteRenderer srIcon;
     public Transform transformDPad, transformZButton, transformXButton;
     public AudioSource audioSourceBGM, audioSourceSFX;
+    public XPortScript xPortScript;
 
     public SubgameID subgameID;
     RenderTexture rt;

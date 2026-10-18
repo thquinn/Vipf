@@ -88,10 +88,14 @@ public class SubgameBaseScript : MonoBehaviour {
     public void EmitEvent(SubgameEvent e) {
         OnSubgameEvent?.Invoke(e, handheldScript);
     }
+
+    public bool HasXPak() {
+        return handheldScript.xPortScript.xPakScript != null;
+    }
 }
 
 public enum SubgameID {
-    None, Rhythm, Tetris
+    None, Rhythm, Tetris, Pong
 }
 public enum SubgameEvent {
     None, TetrisTetris

@@ -59,7 +59,7 @@ public class PlayerScript : MonoBehaviour {
             0,
             Mathf.Lerp(rb.linearVelocity.z, inputVelocity.z, t)
         );
-        Vector3 targetHeadPosition = Keyboard.current.leftCtrlKey.isPressed ? initialHeadPosition / 2 : initialHeadPosition;
+        Vector3 targetHeadPosition = Keyboard.current.leftCtrlKey.isPressed ? initialHeadPosition * .66f : initialHeadPosition;
         transformHead.localPosition = Vector3.SmoothDamp(transformHead.localPosition, targetHeadPosition, ref vHead, 0.2f);
     }
 
@@ -82,7 +82,7 @@ public class PlayerScript : MonoBehaviour {
             Release();
         } else {
             // Grab.
-            grabbedGrabbable = Util.GetCameraCollider(cam, layerMaskGrab, 1.5f)?.GetComponent<GrabbableScript>();
+            grabbedGrabbable = Util.GetCameraCollider(cam, layerMaskGrab, 2f)?.GetComponent<GrabbableScript>();
             if (grabbedGrabbable != null) {
                 Rigidbody handheldRB = grabbedGrabbable.GetComponent<Rigidbody>();
                 handheldRB.linearVelocity = Vector3.zero;
@@ -95,8 +95,11 @@ public class PlayerScript : MonoBehaviour {
             }
         }
     }
-    public void Release() {
+    void Release() {
         grabbedGrabbable.isHeld = false;
         grabbedGrabbable = null;
+    }
+    public void ReleaseIfHolding(GrabbableScript grabbable) {
+        if (grabbedGrabbable == grabbable) Release();
     }
 }

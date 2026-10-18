@@ -74,9 +74,7 @@ public class TapePlayerScript : MonoBehaviour {
         if (tapeScript != null) return;
         tapeScript = other.GetComponent<TapeScript>();
         if (tapeScript == null) return;
-        if (PlayerScript.instance.grabbedGrabbable == tapeScript) {
-            PlayerScript.instance.Release();
-        }
+        PlayerScript.instance.ReleaseIfHolding(tapeScript);
         Rigidbody tapeRB = tapeScript.GetComponent<Rigidbody>();
         tapeRB.isKinematic = false;
         tapeRB.linearVelocity = Vector3.zero;
