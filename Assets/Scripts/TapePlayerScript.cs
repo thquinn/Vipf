@@ -61,7 +61,7 @@ public class TapePlayerScript : MonoBehaviour {
         mrLED.GetPropertyBlock(block);
         Color ledColor = Color.black;
         if (state == TapePlayerState.Ready) {
-            ledColor = (Time.time % 0.5f) < 0.25f ? COLOR_SUPERGREEN : Color.black;
+            ledColor = (Time.time % 1f) < 0.5f ? COLOR_SUPERGREEN : Color.black;
         }
         if (state == TapePlayerState.Playing) {
             ledColor = COLOR_SUPERRED;

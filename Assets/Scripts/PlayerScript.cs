@@ -53,6 +53,7 @@ public class PlayerScript : MonoBehaviour {
         if (rb.isKinematic) return;
         Vector2 move = input.Player.Move.ReadValue<Vector2>();
         Vector3 inputVelocity = transformHead.forward * move.y * MOVE_SPEED + transformHead.right * move.x * MOVE_SPEED;
+        if (Keyboard.current.leftShiftKey.isPressed) inputVelocity *= 2;
         float t = 1f - Mathf.Exp(-MOVE_DECAY * Time.fixedDeltaTime);
         rb.linearVelocity = new Vector3(
             Mathf.Lerp(rb.linearVelocity.x, inputVelocity.x, t),

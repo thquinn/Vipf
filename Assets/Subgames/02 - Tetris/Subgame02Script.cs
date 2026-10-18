@@ -222,6 +222,7 @@ public class Subgame02Script : MonoBehaviour {
         for (int y = 0; y < cleared; y++) ClearRow(y);
         if (cleared > 0) subgame.score += LINE_CLEAR_SCORES[Mathf.Min(cleared, LINE_CLEAR_SCORES.Length - 1)];
         if (cleared >= 4) subgame.EmitEvent(SubgameEvent.TetrisTetris);
+        if (cleared >= 5) subgame.EmitEvent(SubgameEvent.TetrisPentris);
     }
 
     bool IsRowFull(int y) {

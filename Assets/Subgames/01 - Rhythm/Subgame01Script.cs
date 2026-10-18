@@ -43,7 +43,7 @@ public class Subgame01Script : MonoBehaviour {
         failIcons = new();
         notes = new();
         
-        audioSourceBGM = subgame.handheldScript.audioSourceBGM;
+        audioSourceBGM = subgame.handheldScript?.audioSourceBGM;
         initialBGMVolume = audioSourceBGM.volume;
         audioSourceBGM.clip = bgm;
         loopLength = (double)bgm.samples / bgm.frequency;

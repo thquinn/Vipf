@@ -61,7 +61,10 @@ public class SubgameBaseScript : MonoBehaviour {
     static float KEY_REPEAT_TIME = 0.066f;
     public bool GetKeyDown(Key key) {
         Assert.IsTrue(ANY_KEY.Contains(key));
-        if (!handheldScript.isHeld) return false;
+        if (!handheldScript.isHeld) {
+            keyPressTimes.Remove(key);
+            return false;
+        }
         if (!Keyboard.current[key].isPressed) {
             keyPressTimes.Remove(key);
             return false;
@@ -69,14 +72,18 @@ public class SubgameBaseScript : MonoBehaviour {
         if (Keyboard.current[key].wasPressedThisFrame) {
             keyPressTimes[key] = Time.unscaledTime;
         }
-        float oldT = Time.unscaledTime - keyPressTimes[key];
+        if (!keyPressTimes.TryGetValue(key, out float pressTime)) {
+            return false;
+        }
+        float oldT = Time.unscaledTime - pressTime;
         float newT = oldT + Time.unscaledDeltaTime;
         if (oldT == 0) return true;
         if (newT < KEY_REPEAT_DELAY) return false;
         if (oldT < KEY_REPEAT_DELAY) return true;
-        return Mathf.FloorToInt((oldT - KEY_REPEAT_DELAY) / KEY_REPEAT_TIME) < Mathf.FloorToInt((newT - KEY_REPEAT_DELAY) / KEY_REPEAT_TIME);
+        return Mathf.FloorToInt((oldT - KEY_REPEAT_DELAY) / KEY_REPEAT_TIME)
+             < Mathf.FloorToInt((newT - KEY_REPEAT_DELAY) / KEY_REPEAT_TIME);
     }
-    
+
     public void PlayBGM(AudioClip bgm) {
         handheldScript.audioSourceBGM.clip = bgm;
         handheldScript.audioSourceBGM.Play();
@@ -90,7 +97,7 @@ public class SubgameBaseScript : MonoBehaviour {
     }
 
     public bool HasXPak() {
-        return handheldScript.xPortScript.xPakScript != null;
+        return handheldScript.HasXPak();
     }
 }
 
@@ -98,5 +105,5 @@ public enum SubgameID {
     None, Rhythm, Tetris, Pong
 }
 public enum SubgameEvent {
-    None, TetrisTetris
+    None, TetrisTetris, TetrisXClear, TetrisPentris
 }

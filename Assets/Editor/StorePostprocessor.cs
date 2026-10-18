@@ -7,6 +7,7 @@ public class StorePostprocessor : AssetPostprocessor {
 
         foreach (var mf in root.GetComponentsInChildren<MeshFilter>()) {
             var go = mf.gameObject;
+            if (go.name.ToLower().EndsWith("-mc")) continue;
 
             var meshCol = go.GetComponent<MeshCollider>();
             if (meshCol != null) Object.DestroyImmediate(meshCol);

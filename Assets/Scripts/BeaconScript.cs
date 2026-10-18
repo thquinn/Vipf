@@ -8,6 +8,7 @@ public class BeaconScript : MonoBehaviour {
     public SubgameID subgame;
     public int score;
     public SubgameEvent subgameEvent;
+    public bool requireXPak;
 
     HashSet<HandheldScript> handheldsInRange;
     float subgameEventTimer;
@@ -41,6 +42,7 @@ public class BeaconScript : MonoBehaviour {
         return false;
     }
     void HandleSubgameEvent(SubgameEvent e, HandheldScript handheldScript) {
+        if (requireXPak && !handheldScript.HasXPak()) return;
         if (e == subgameEvent && handheldsInRange.Contains(handheldScript)) {
             subgameEventTimer = 0.5f;
         }
@@ -48,6 +50,7 @@ public class BeaconScript : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         HandheldScript handheldScript = other.GetComponent<HandheldScript>();
+        if (requireXPak && !handheldScript.HasXPak()) return;
         if (handheldScript?.subgameID == subgame) {
             handheldsInRange.Add(handheldScript);
         }

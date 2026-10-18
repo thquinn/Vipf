@@ -68,6 +68,10 @@ public class HandheldScript : GrabbableScript {
         return Quaternion.Euler(x, 0, z);
     }
 
+    public bool HasXPak() {
+        return xPortScript.xPakScript != null;
+    }
+
     void OnDestroy() {
         if (rt != null) { rt.Release(); Destroy(rt); }
     }

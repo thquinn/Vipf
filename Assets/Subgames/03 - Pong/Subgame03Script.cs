@@ -5,15 +5,22 @@ public class Subgame03Script : MonoBehaviour {
     static float CONTACT_X = 5.375f, CONTACT_Y = 5.25f;
     static float LOSE_X = 7f;
     static float MAX_EXTENT_Y = 5.5f;
-    static float SPEED_DEFAULT = 6, SPEED_ENEMY_INCREMENT = 0.2f;
+    static float SPEED_PLAYER = 6;
+    static float SPEED_ENEMY = 5, SPEED_ENEMY_INCREMENT = 0.2f, SPEED_ENEMY_XPAK_MULT = 1.5f;
     static float BOUNCE_DX_MULT = -1.1f;
     static float BOUNCE_DY_MULT = 3f;
     static float EXTENT_FUDGE = 0.25f;
+    static float GUN_COOLDOWN = 1;
+    static float ENEMY_STUN_TIME = 0.5f;
 
-    public Transform ball, paddlePlayer, paddleEnemy;
+    public GameObject prefabBullet;
+
+    public Transform ball, paddlePlayer, paddleEnemy, gun;
 
     SubgameBaseScript subgame;
     Vector3 vBall;
+    float gunTimer;
+    float enemyStunTimer;
 
     void Start() {
         subgame = GetComponentInParent<SubgameBaseScript>();
@@ -23,6 +30,7 @@ public class Subgame03Script : MonoBehaviour {
     void Update() {
         if (subgame.ShouldRestart()) {
             Restart();
+            return;
         }
         if (subgame.isGameOver) return;
 
@@ -30,17 +38,29 @@ public class Subgame03Script : MonoBehaviour {
         int dy = 0;
         if (subgame.GetKey(Key.UpArrow)) dy++;
         if (subgame.GetKey(Key.DownArrow)) dy--;
-        paddlePlayer.localPosition += new Vector3(0, dy * Time.deltaTime * SPEED_DEFAULT, 0);
+        paddlePlayer.localPosition += new Vector3(0, dy * Time.deltaTime * SPEED_PLAYER, 0);
         ClampPaddlePosition(paddlePlayer);
 
+        // Player shooting.
+        gun.gameObject.SetActive(subgame.HasXPak());
+        gun.localPosition = paddlePlayer.localPosition;
+        gunTimer -= Time.deltaTime;
+        if (gunTimer <= 0 && subgame.GetKey(Key.Z) && subgame.HasXPak()) {
+            Instantiate(prefabBullet, transform).GetComponent<Subgame03BulletScript>().Init(this);
+            gunTimer = GUN_COOLDOWN;
+        }
+
         // Enemy paddle.
-        float enemyToBall = ball.localPosition.y - paddleEnemy.localPosition.y;
-        float enemySpeed = SPEED_DEFAULT + subgame.score * SPEED_ENEMY_INCREMENT;
-        if (subgame.HasXPak()) enemySpeed *= 2;
-        float travel = Mathf.Min(Mathf.Abs(enemyToBall), Time.deltaTime * enemySpeed);
-        travel *= Mathf.Sign(enemyToBall);
-        paddleEnemy.localPosition += new Vector3(0, travel, 0);
-        ClampPaddlePosition(paddleEnemy);
+        enemyStunTimer -= Time.deltaTime;
+        if (enemyStunTimer <= 0) {
+            float enemyToBall = ball.localPosition.y - paddleEnemy.localPosition.y;
+            float enemySpeed = SPEED_ENEMY + subgame.score * SPEED_ENEMY_INCREMENT;
+            if (subgame.HasXPak()) enemySpeed *= SPEED_ENEMY_XPAK_MULT;
+            float travel = Mathf.Min(Mathf.Abs(enemyToBall), Time.deltaTime * enemySpeed);
+            travel *= Mathf.Sign(enemyToBall);
+            paddleEnemy.localPosition += new Vector3(0, travel, 0);
+            ClampPaddlePosition(paddleEnemy);
+        }
 
         Vector3 nextBallPosition = ball.localPosition + vBall * Time.deltaTime;
         // Player paddle check.
@@ -72,6 +92,8 @@ public class Subgame03Script : MonoBehaviour {
     }
 
     void Restart() {
+        paddlePlayer.localPosition = new Vector3(paddlePlayer.localPosition.x, 0, 0);
+        paddleEnemy.localPosition = new Vector3(paddleEnemy.localPosition.x, 0, 0);
         ResetBall(1);
     }
     void ResetBall(int direction) {
@@ -102,5 +124,10 @@ public class Subgame03Script : MonoBehaviour {
         Vector2 yExtents = GetYExtents(paddle);
         float normalizedContact = Mathf.InverseLerp(yExtents.x, yExtents.y, ball.localPosition.y) * 2 - 1;
         vBall.y += normalizedContact * BOUNCE_DY_MULT;
+    }
+
+    public void BulletHit(Transform target) {
+        if (target == ball) vBall.x += 0.2f;
+        if (target == paddleEnemy) enemyStunTimer = ENEMY_STUN_TIME;
     }
 }
