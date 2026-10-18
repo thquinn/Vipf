@@ -54,8 +54,8 @@ public class TapePlayerScript : MonoBehaviour {
         transformLid.localRotation = Util.SmoothDampQuaternion(transformLid.localRotation, lidOpen ? initialLidRotation : Quaternion.identity, ref vLid, 0.2f);
         bool holdTape = new TapePlayerState[] { TapePlayerState.Loading, TapePlayerState.Playing, TapePlayerState.Stopping }.Contains(state);
         if (holdTape) {
-            tapeScript.transform.localPosition = Vector3.SmoothDamp(tapeScript.transform.position, transform.position, ref vTape, 0.1f);
-            tapeScript.transform.localRotation = Util.SmoothDampQuaternion(tapeScript.transform.rotation, transform.rotation, ref vTapeRot, 0.1f);
+            tapeScript.transform.position = Vector3.SmoothDamp(tapeScript.transform.position, transform.position, ref vTape, 0.1f);
+            tapeScript.transform.rotation = Util.SmoothDampQuaternion(tapeScript.transform.rotation, transform.rotation, ref vTapeRot, 0.1f);
         }
         // LED.
         mrLED.GetPropertyBlock(block);

@@ -8,7 +8,7 @@ public class CashRegisterScript : MonoBehaviour {
     bool open;
     Vector3 vDrawer;
 
-    void Update() {
+    void FixedUpdate() {
         if (beacon.Activated()) open = true;
         transformDrawer.localPosition = Vector3.SmoothDamp(transformDrawer.localPosition, open ? openDrawerPosition : Vector3.zero, ref vDrawer, 1f);
     }

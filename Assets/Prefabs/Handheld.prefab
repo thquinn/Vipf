@@ -963,6 +963,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: fe006ba9bc7b8fc47b1cd38f52561fc4, type: 3}
   - {fileID: 21300000, guid: f7c0f062f7f08454083c936db62d7389, type: 3}
   - {fileID: 21300000, guid: c8b49c01e4f9ef749946312be14375c0, type: 3}
+  - {fileID: 21300000, guid: 4c570f415d612804ca4beb32cb7ae555, type: 3}
+  - {fileID: 21300000, guid: 0a15c0317144c8c4a8c66126ea67d0b6, type: 3}
   subgame: {fileID: 0}
   screenRenderer: {fileID: 7742043461005965313}
   srIcon: {fileID: 281023559579835928}

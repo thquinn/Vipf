@@ -10,9 +10,10 @@ public class Subgame02Script : MonoBehaviour {
     const int PIECE_I = 1;
     const int PIECE_O = 4;
     const int PIECE_X = 9;
+    const int PIECE_LONG_I = 10;
 
     static readonly int[] LINE_CLEAR_SCORES = { 0, 1, 3, 6, 10, 20 };
-    static readonly int[] BOX_SIZES = { 0, 4, 3, 3, 2, 3, 3, 3 };
+    static readonly int[] BOX_SIZES = { 0, 4, 3, 3, 2, 3, 3, 3, 0, 3, 5 };
 
     static readonly Vector2Int[][] SHAPES = {
         null,
@@ -24,9 +25,15 @@ public class Subgame02Script : MonoBehaviour {
         new[] { V(1, 0), V(0, 1), V(1, 1), V(2, 1) },
         new[] { V(0, 0), V(1, 0), V(1, 1), V(2, 1) },
         null,
+        new[] { V(1, 0), V(0, 1), V(1, 1), V(2, 1), V(1, 2) },
+        new[] { V(0, 2), V(1, 2), V(2, 2), V(3, 2), V(4, 2) },
     };
 
     static readonly int[] KICKS_NONE = { 0, 0 };
+
+    static readonly int[] KICKS_PENTOMINO = {
+        0, 0, -1, 0, 1, 0, -2, 0, 2, 0, 0, 1, 0, 2, -1, 1, 1, 1, -1, 2, 1, 2
+    };
 
     static readonly int[][] KICKS_JLSTZ = {
         new[] { 0, 0, -1, 0, -1, 1, 0, -2, -1, -2 },
@@ -129,13 +136,19 @@ public class Subgame02Script : MonoBehaviour {
         pieceType = bag[bag.Count - 1];
         bag.RemoveAt(bag.Count - 1);
         pieceRotation = 0;
-        piecePosition = new Vector2Int((width - BOX_SIZES[pieceType]) / 2, 0);
+        piecePosition = new Vector2Int((width - BOX_SIZES[pieceType]) / 2, SpawnRow(pieceType));
         if (!Fits(pieceType, piecePosition, pieceRotation)) GameOver();
+    }
+
+    int SpawnRow(int type) {
+        int topRow = SHAPES[type].Min(cell => cell.y);
+        return Mathf.Min(0, 1 - topRow);
     }
 
     void GameOver() {
         subgame.GameOver();
     }
+
     void Restart() {
         System.Array.Clear(grid, 0, grid.Length);
         bag.Clear();
@@ -145,9 +158,10 @@ public class Subgame02Script : MonoBehaviour {
 
     Vector2Int[] PieceCells(int type, Vector2Int position, int rotation) {
         int size = BOX_SIZES[type];
-        var cells = new Vector2Int[4];
-        for (int i = 0; i < 4; i++) {
-            Vector2Int cell = SHAPES[type][i];
+        Vector2Int[] shape = SHAPES[type];
+        var cells = new Vector2Int[shape.Length];
+        for (int i = 0; i < shape.Length; i++) {
+            Vector2Int cell = shape[i];
             for (int r = 0; r < rotation; r++) {
                 cell = new Vector2Int(size - 1 - cell.y, cell.x);
             }
@@ -172,7 +186,8 @@ public class Subgame02Script : MonoBehaviour {
     }
 
     int[] KickTable(int type, int fromRotation, int direction) {
-        if (type == PIECE_O) return KICKS_NONE;
+        if (type == PIECE_O || type == PIECE_X) return KICKS_NONE;
+        if (type == PIECE_LONG_I) return KICKS_PENTOMINO;
         int index = fromRotation * 2 + (direction > 0 ? 0 : 1);
         return type == PIECE_I ? KICKS_I[index] : KICKS_JLSTZ[index];
     }
@@ -212,6 +227,7 @@ public class Subgame02Script : MonoBehaviour {
 
     void ClearFullRows() {
         int cleared = 0;
+        bool containedX = GridContains(PIECE_X);
         for (int y = height - 1; y >= 0; y--) {
             if (IsRowFull(y)) {
                 cleared++;
@@ -223,6 +239,7 @@ public class Subgame02Script : MonoBehaviour {
         if (cleared > 0) subgame.score += LINE_CLEAR_SCORES[Mathf.Min(cleared, LINE_CLEAR_SCORES.Length - 1)];
         if (cleared >= 4) subgame.EmitEvent(SubgameEvent.TetrisTetris);
         if (cleared >= 5) subgame.EmitEvent(SubgameEvent.TetrisPentris);
+        if (cleared > 0 && containedX && !GridContains(PIECE_X)) subgame.EmitEvent(SubgameEvent.TetrisXClear);
     }
 
     bool IsRowFull(int y) {
@@ -254,11 +271,32 @@ public class Subgame02Script : MonoBehaviour {
         int maxX = shape.Max(coor => coor.x);
         int minY = shape.Min(coor => coor.y);
         int maxY = shape.Max(coor => coor.y);
-        float offX = (maxX - minX) / -2f;
-        float offY = (maxY - minY) / -2f;
-        for (int i = 0; i < 4; i++) {
-            Vector3 pos = new Vector3(shape[i].y + offY, shape[i].x + offX);
-            transformNextPreview.GetChild(i).transform.localPosition = pos;
+        float offX = -(minX + maxX) / 2f;
+        float offY = -(minY + maxY) / 2f;
+        for (int i = 0; i < transformNextPreview.childCount; i++) {
+            if (i < shape.Length) {
+                Vector3 pos = new Vector3(shape[i].y + offY, shape[i].x + offX);
+                transformNextPreview.GetChild(i).transform.localPosition = pos;
+            } else {
+                transformNextPreview.GetChild(i).transform.localPosition = new Vector3(0, -20, 0);
+            }
         }
+    }
+
+    public bool ReceiveBroadcastTetrisX() {
+        if (pieceType == PIECE_X) return false;
+        if (bag[bag.Count - 1] == PIECE_X) return false;
+        if (GridContains(PIECE_X)) return false;
+        bag[bag.Count - 1] = PIECE_X;
+        return true;
+    }
+
+    bool GridContains(int value) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (grid[x, y] == value) return true;
+            }
+        }
+        return false;
     }
 }

@@ -30,6 +30,9 @@ public class SubgameBaseScript : MonoBehaviour {
         tmpScore.gameObject.SetActive(!isGameOver);
         tmpScore.text = score.ToString();
         gameOverContainer.SetActive(isGameOver);
+        if (handheldScript.isHeld && Keyboard.current.f1Key.wasPressedThisFrame) {
+            AddPoints(1);
+        }
     }
 
     public void AddPoints(int amount) {
@@ -105,5 +108,5 @@ public enum SubgameID {
     None, Rhythm, Tetris, Pong
 }
 public enum SubgameEvent {
-    None, TetrisTetris, TetrisXClear, TetrisPentris
+    None, PongZX, TetrisTetris, TetrisXClear, TetrisPentris
 }

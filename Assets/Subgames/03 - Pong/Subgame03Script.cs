@@ -34,6 +34,11 @@ public class Subgame03Script : MonoBehaviour {
         }
         if (subgame.isGameOver) return;
 
+        // Special event.
+        if (subgame.GetKey(Key.Z) && subgame.GetKey(Key.X)) {
+            subgame.EmitEvent(SubgameEvent.PongZX);
+        }
+
         // Player paddle.
         int dy = 0;
         if (subgame.GetKey(Key.UpArrow)) dy++;
