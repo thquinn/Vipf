@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -58,6 +59,11 @@ public class BeaconScript : MonoBehaviour {
         if (e == subgameEvent && handheldsInRange.Contains(handheldScript)) {
             subgameEventTimer = 0.5f;
         }
+    }
+
+    public int GetTotalScore() {
+        return handheldsInRange.Sum(h => h.subgame.score);
+
     }
 
     private void OnTriggerEnter(Collider other) {

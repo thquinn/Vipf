@@ -83,7 +83,10 @@ public class PlayerScript : MonoBehaviour {
             Release();
         } else {
             // Grab.
-            grabbedGrabbable = Util.GetCameraCollider(cam, layerMaskGrab, 2f)?.GetComponent<GrabbableScript>();
+            float dotUp = Vector3.Dot(cam.transform.forward, Vector3.up);
+            float grabDistance = Mathf.Lerp(2, 1, Mathf.Clamp01(dotUp));
+
+            grabbedGrabbable = Util.GetCameraCollider(cam, layerMaskGrab, grabDistance)?.GetComponent<GrabbableScript>();
             if (grabbedGrabbable != null) {
                 Rigidbody handheldRB = grabbedGrabbable.GetComponent<Rigidbody>();
                 handheldRB.isKinematic = false;
