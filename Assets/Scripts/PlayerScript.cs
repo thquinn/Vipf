@@ -1,5 +1,5 @@
+using System.Xml.Serialization;
 using UnityEngine;
-using UnityEngine.Diagnostics;
 using UnityEngine.InputSystem;
 
 public class PlayerScript : MonoBehaviour {
@@ -16,7 +16,7 @@ public class PlayerScript : MonoBehaviour {
     
     InputSystem_Actions input;
     Vector3 initialHeadPosition, vHead;
-    public HandheldScript grabbedHandheld;
+    public GrabbableScript grabbedGrabbable;
     Vector3 handheldInitialPosition;
     Quaternion handheldInitialRotation;
     float handheldGrabAnimT;
@@ -60,38 +60,43 @@ public class PlayerScript : MonoBehaviour {
             Mathf.Lerp(rb.linearVelocity.z, inputVelocity.z, t)
         );
         Vector3 targetHeadPosition = Keyboard.current.leftCtrlKey.isPressed ? initialHeadPosition / 2 : initialHeadPosition;
-        transformHead.localPosition = Vector3.SmoothDamp(transformHead.localPosition, targetHeadPosition, ref vHead, 0.1f);
+        transformHead.localPosition = Vector3.SmoothDamp(transformHead.localPosition, targetHeadPosition, ref vHead, 0.2f);
     }
 
     void UpdateGrab() {
-        if (grabbedHandheld != null) {
+        if (grabbedGrabbable != null) {
             handheldGrabAnimT = Mathf.Clamp01(handheldGrabAnimT + Time.deltaTime * 6f);
             float t = handheldGrabAnimT;
-            grabbedHandheld.transform.position = Vector3.Lerp(handheldInitialPosition, transformHandheldAnchor.transform.position, t);
-            grabbedHandheld.transform.rotation = Quaternion.Lerp(handheldInitialRotation, transformHandheldAnchor.transform.rotation, t);
+            Vector3 targetPosition = transformHandheldAnchor.transform.position + transformHandheldAnchor.transform.rotation * grabbedGrabbable.GrabbedPositionOffset();
+            grabbedGrabbable.transform.position = Vector3.Lerp(handheldInitialPosition, targetPosition, t);
+            Quaternion targetRotation = transformHandheldAnchor.transform.rotation * grabbedGrabbable.GrabbedRotationOffset();
+            grabbedGrabbable.transform.rotation = Quaternion.Lerp(handheldInitialRotation, targetRotation, t);
         }
 
         // Grabbing and dropping.
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
-        if (grabbedHandheld != null) {
+        if (grabbedGrabbable != null) {
             // Drop.
-            grabbedHandheld.GetComponent<Rigidbody>().isKinematic = false;
-            grabbedHandheld.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward * 2;
-            grabbedHandheld.isHeld = false;
-            grabbedHandheld = null;
+            grabbedGrabbable.GetComponent<Rigidbody>().isKinematic = false;
+            grabbedGrabbable.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward * 2;
+            Release();
         } else {
             // Grab.
-            grabbedHandheld = Util.GetCameraCollider(cam, layerMaskGrab, 1.5f)?.GetComponent<HandheldScript>();
-            if (grabbedHandheld != null) {
-                Rigidbody handheldRB = grabbedHandheld.GetComponent<Rigidbody>();
+            grabbedGrabbable = Util.GetCameraCollider(cam, layerMaskGrab, 1.5f)?.GetComponent<GrabbableScript>();
+            if (grabbedGrabbable != null) {
+                Rigidbody handheldRB = grabbedGrabbable.GetComponent<Rigidbody>();
                 handheldRB.linearVelocity = Vector3.zero;
                 handheldRB.angularVelocity = Vector3.zero;
                 handheldRB.isKinematic = true;
-                handheldInitialPosition = grabbedHandheld.transform.position;
-                handheldInitialRotation = grabbedHandheld.transform.rotation;
+                handheldInitialPosition = grabbedGrabbable.transform.position;
+                handheldInitialRotation = grabbedGrabbable.transform.rotation;
                 handheldGrabAnimT = 0;
-                grabbedHandheld.isHeld = true;
+                grabbedGrabbable.isHeld = true;
             }
         }
+    }
+    public void Release() {
+        grabbedGrabbable.isHeld = false;
+        grabbedGrabbable = null;
     }
 }

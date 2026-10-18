@@ -7,8 +7,9 @@ public static class Util {
     public static Collider GetCameraCollider(Camera camera, LayerMask layerMask, float maxDistance = Mathf.Infinity) {
         Ray ray = camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         bool didHit = Physics.Raycast(ray, out RaycastHit hit, maxDistance, layerMask);
-        var handheld = hit.collider?.GetComponent<HandheldScript>();
-        Debug.DrawRay(ray.origin, ray.direction * 100f, handheld != null ? Color.green : Color.red, 10);
+        var grabbable = hit.collider?.GetComponent<GrabbableScript>();
+        float rayDistance = maxDistance == Mathf.Infinity ? 100 : maxDistance;
+        Debug.DrawRay(ray.origin, ray.direction * rayDistance, grabbable != null ? Color.green : Color.red, 10);
         return didHit ? hit.collider : null;
     }
 

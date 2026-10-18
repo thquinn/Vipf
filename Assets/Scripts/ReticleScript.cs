@@ -7,7 +7,7 @@ public class ReticleScript : MonoBehaviour {
     float vAlpha;
 
     void Update() {
-        float targetAlpha = PlayerScript.instance.grabbedHandheld == null ? 1 : 0;
+        float targetAlpha = PlayerScript.instance.grabbedGrabbable == null ? 1 : 0;
         image.SetAlpha(Mathf.SmoothDamp(image.color.a, targetAlpha, ref vAlpha, 0.05f));
     }
 }

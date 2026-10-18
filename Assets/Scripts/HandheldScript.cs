@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class HandheldScript : MonoBehaviour {
+public class HandheldScript : GrabbableScript {
     public Sprite[] spriteSubgameIcons;
 
     public SubgameBaseScript subgame;
@@ -12,7 +12,6 @@ public class HandheldScript : MonoBehaviour {
     public AudioSource audioSourceBGM, audioSourceSFX;
 
     public SubgameID subgameID;
-    [HideInInspector] public bool isHeld;
     RenderTexture rt;
     Quaternion vRotDPad;
     Vector3 vZButton, vXButton;
