@@ -3,7 +3,27 @@ guid: 8940cb0a7afdf7e41a4492bbe006cc1a
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ceiling
+    second: {fileID: 2100000, guid: 09a65d6f0f2a0a14f84cfb5878eea4ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Floor
+    second: {fileID: 2100000, guid: 78b42919addc8ed4092a9b116a7b1651, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wall
+    second: {fileID: 2100000, guid: c7e77137147adec48ab404a6fcc636d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wall.001
+    second: {fileID: 2100000, guid: c7e77137147adec48ab404a6fcc636d4, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -91,7 +111,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.003
+    globalScale: 0.3
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
