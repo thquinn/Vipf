@@ -5,6 +5,7 @@ public class Subgame04Script : MonoBehaviour {
     static int EVENT_SCORE_THRESHOLD = 20;
 
     public GameObject prefabPlatform;
+    public AudioClip bgm;
 
     public Subgame04PlayerScript playerScript;
     public float initialDY, dyAccel;
@@ -13,6 +14,7 @@ public class Subgame04Script : MonoBehaviour {
     public float gameOverDelta;
     public float catchupDelta, catchupOffset, catchupTime;
     public float yPerScore;
+    public Vector2 bgmLoopPoints;
 
     SubgameBaseScript subgame;
 
@@ -25,6 +27,7 @@ public class Subgame04Script : MonoBehaviour {
         subgame = GetComponentInParent<SubgameBaseScript>();
         playerScript.Init(subgame);
         platforms = new();
+        subgame.SetBGMLoopPoints(bgmLoopPoints);
         Restart();
     }
 
@@ -33,7 +36,10 @@ public class Subgame04Script : MonoBehaviour {
             Restart();
             return;
         }
-        if (subgame.isGameOver) return;
+        if (subgame.isGameOver) {
+            subgame.StopBGM();
+            return;
+        }
 
         dy += dyAccel * Time.deltaTime;
         y += dy * Time.deltaTime;
@@ -83,5 +89,6 @@ public class Subgame04Script : MonoBehaviour {
         nextPlatformY = -3;
         foreach (var platform in platforms) if (platform != null) Destroy(platform.gameObject);
         platforms.Clear();
+        subgame.PlayBGM(bgm);
     }
 }

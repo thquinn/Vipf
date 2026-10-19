@@ -830,6 +830,8 @@ GameObject:
   - component: {fileID: 6313909695951512881}
   - component: {fileID: 3040797294141658445}
   - component: {fileID: 2082637878672561821}
+  - component: {fileID: -8316353279739103400}
+  - component: {fileID: -84885450536485917}
   m_Layer: 6
   m_Name: Handheld
   m_TagString: Handheld
@@ -965,6 +967,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: c8b49c01e4f9ef749946312be14375c0, type: 3}
   - {fileID: 21300000, guid: 4c570f415d612804ca4beb32cb7ae555, type: 3}
   - {fileID: 21300000, guid: 0a15c0317144c8c4a8c66126ea67d0b6, type: 3}
+  sfxGameOver: {fileID: 8300000, guid: a41150060ea118e4989a088f02cd45c9, type: 3}
   subgame: {fileID: 0}
   screenRenderer: {fileID: 7742043461005965313}
   srIcon: {fileID: 281023559579835928}
@@ -1208,6 +1211,25 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!170 &-8316353279739103400
+AudioDistortionFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7867854860185653896}
+  m_Enabled: 1
+  m_DistortionLevel: 0.15
+--- !u!165 &-84885450536485917
+AudioHighPassFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7867854860185653896}
+  m_Enabled: 1
+  m_CutoffFrequency: 977
+  m_HighpassResonanceQ: 1
 --- !u!1 &8215233940152766666
 GameObject:
   m_ObjectHideFlags: 0

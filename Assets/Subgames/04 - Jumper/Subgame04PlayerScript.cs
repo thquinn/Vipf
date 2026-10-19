@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 public class Subgame04PlayerScript : MonoBehaviour {
     public Sprite spriteIdle, spriteJump, spriteSteer;
+    public AudioClip sfxJump, sfxLand;
 
     public SpriteRenderer sr;
     public Collider2D collidre;
@@ -39,6 +40,7 @@ public class Subgame04PlayerScript : MonoBehaviour {
                 // TODO: Experiment with reducing gravity.
             }
             rb2d.linearVelocity = new Vector2(horizontalInit * GetDX(), dy);
+            subgame.PlaySFX(sfxJump);
         }
         superjumpTimer -= Time.deltaTime;
     }
@@ -85,5 +87,6 @@ public class Subgame04PlayerScript : MonoBehaviour {
         rb2d.linearVelocity = new Vector2(0, 0);
         rb2d.bodyType = RigidbodyType2D.Kinematic;
         rb2d.position = new Vector2(rb2d.position.x, collision.transform.position.y + 15 / 16f);
+        subgame.PlaySFX(sfxLand);
     }
 }

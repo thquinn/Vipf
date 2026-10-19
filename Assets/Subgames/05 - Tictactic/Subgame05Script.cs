@@ -1,18 +1,24 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
-using UnityEngine.UIElements;
+using Assets.Code;
 
 public class Subgame05Script : MonoBehaviour {
-    public AudioClip sfxPlay, sfxCollect;
+    static int TRACKER_WIDTH = 24;
+
+    public AudioClip sfxPlay, sfxCollect, sfxTeardown;
 
     public Grid grid;
-    public Tilemap tilemap;
+    public Tilemap tilemap, tracker;
     public Tile tile, tileProvisional;
+    public Tile trackerTileEmpty, trackerTileFull, trackerTileEllipsis, trackerTileArrow;
     public SpriteRenderer srCursor;
     public TMP_Text tmpCPUScore;
+    public int roundStartCount, roundEndCount;
+    public int initialEnemyTarget;
 
     SubgameBaseScript subgame;
     bool[,] stones;
@@ -39,17 +45,17 @@ public class Subgame05Script : MonoBehaviour {
         if (subgame.isGameOver) return;
         pause -= Time.deltaTime;
 
-        // Player and enemy.
-        if (state == TictacticState.PlayerTurn) {
-            // Player.
-            cursor += InputDirection();
-            cursor.x = Mathf.Clamp(cursor.x, 0, stones.GetLength(0) - 1);
-            cursor.y = Mathf.Clamp(cursor.y, 0, stones.GetLength(1) - 1);
-            srCursor.transform.localPosition = initialCursorPosition + new Vector3(cursor.x * grid.cellSize.x, cursor.y * grid.cellSize.y, 0);
-            if (subgame.GetKeyDown(Key.Z)) Play(cursor);
-        } else if (state == TictacticState.CPUTurn) {
-            // CPU.
-            if (pause <= 0) {
+        if (pause <= 0) {
+            // Player and enemy.
+            if (state == TictacticState.PlayerTurn) {
+                // Player.
+                cursor += InputDirection();
+                cursor.x = Mathf.Clamp(cursor.x, 0, stones.GetLength(0) - 1);
+                cursor.y = Mathf.Clamp(cursor.y, 0, stones.GetLength(1) - 1);
+                srCursor.transform.localPosition = initialCursorPosition + new Vector3(cursor.x * grid.cellSize.x, cursor.y * grid.cellSize.y, 0);
+                if (subgame.GetKeyDown(Key.Z)) Play(cursor);
+            } else if (state == TictacticState.CPUTurn) {
+                // CPU.
                 List<Vector2Int> bestCoors = new();
                 int bestCount = 0;
                 for (int x = 0; x < stones.GetLength(0); x++) {
@@ -65,14 +71,20 @@ public class Subgame05Script : MonoBehaviour {
                     }
                 }
                 Play(bestCoors[Random.Range(0, bestCoors.Count)]);
-            }
-        }
-        else if (state == TictacticState.PlayerCollect || state == TictacticState.CPUCollect) {
-            // Collect.
-            if (pause <= 0) {
+            } else if (state == TictacticState.PlayerCollect || state == TictacticState.CPUCollect) {
+                // Collect.
                 if (capture == null) {
-                    NextState();
-                    if (state == TictacticState.CPUTurn) pause = 1;
+                    if (CountStones() <= roundEndCount) {
+                        if (state == TictacticState.PlayerCollect) {
+                            round++;
+                            int enemyTarget = Mathf.Max(3, initialEnemyTarget - round);
+                            enemyScore = new Vector2Int(0, enemyTarget);
+                        }
+                        state = TictacticState.RoundTeardown;
+                    } else {
+                        NextState();
+                        if (state == TictacticState.CPUTurn) pause = 1;
+                    }
                 } else {
                     foreach (Vector2Int coor in capture) {
                         stones[coor.x, coor.y] = false;
@@ -84,15 +96,33 @@ public class Subgame05Script : MonoBehaviour {
                     pause = 1;
                     subgame.PlaySFX(sfxCollect);
                 }
+            } else if (state == TictacticState.RoundTeardown) {
+                if (CountStones() == 0) {
+                    StartRound();
+                    state = TictacticState.PlayerTurn;
+                } else {
+                    RemoveRandomStone();
+                    subgame.PlaySFX(sfxTeardown);
+                    pause = CountStones() == 0 ? 1 : 0.2f;
+                }
             }
         }
+
 
         // Update visuals.
         for (int x = 0; x < stones.GetLength(0); x++) {
             for (int y = 0; y < stones.GetLength(1); y++) {
-                tilemap.SetTile(new Vector3Int(x, y, 0), stones[x, y] ? tile : null);
+                if (stones[x, y]) {
+                    tilemap.SetTile(new Vector3Int(x, y, 0), tile);
+                } else tilemap.SetTile(new Vector3Int(x, y, 0), null);
             }
         }
+        int stoneCount = CountStones();
+        for (int i = 0; i < TRACKER_WIDTH; i++) {
+            tracker.SetTile(new Vector3Int(i, 0, 0), i < stoneCount ? trackerTileFull : trackerTileEmpty);
+            tracker.SetTile(new Vector3Int(i, 1, 0), i == roundEndCount - 1 ? trackerTileArrow : null);
+        }
+        tracker.SetTile(new Vector3Int(TRACKER_WIDTH, 0, 0), trackerTileEllipsis);
         if (state == TictacticState.PlayerTurn && !stones[cursor.x, cursor.y]) {
             tilemap.SetTile(new Vector3Int(cursor.x, cursor.y, 0), tileProvisional);
         }
@@ -160,28 +190,40 @@ public class Subgame05Script : MonoBehaviour {
         }
         return connected;
     }
-
-    void StartRound() {
-        round++;
-        ClearGrid();
-        capture = null;
-        for (int i = 0; i < 12; i++) {
-            int x = Random.Range(0, stones.GetLength(0));
-            int y = Random.Range(0, stones.GetLength(1));
-            stones[x, y] = true;
+    int CountStones() {
+        int stoneCount = 0;
+        for (int x = 0; x < stones.GetLength(0); x++) {
+            for (int y = 0; y < stones.GetLength(1); y++) {
+                if (stones[x, y]) stoneCount++;
+            }
         }
-        int enemyTarget = Mathf.Max(3, 15 - 2 * round);
-        enemyScore = new Vector2Int(0, enemyTarget);
+        return stoneCount;
     }
-    void ClearGrid() {
-        System.Array.Clear(stones, 0, stones.Length);
+    void RemoveRandomStone() {
+        List<int> indices = Enumerable.Range(0, stones.Length).ToList();
+        indices.Shuffle();
+        foreach (int i in indices) {
+            int x = i % stones.GetLength(0);
+            int y = i / stones.GetLength(0);
+            if (stones[x, y]) {
+                stones[x, y] = false;
+                return;
+            }
+        }
     }
+
     void Restart() {
         round = 0;
+        pause = 0;
+        enemyScore = new Vector2Int(0, initialEnemyTarget);
         StartRound();
+    }
+    void StartRound() {
+        capture = null;
+        UtilTictactic.FillWithoutCaptures(stones, roundStartCount);
     }
 }
 
 enum TictacticState {
-    PlayerTurn, PlayerCollect, CPUTurn, CPUCollect, StartRound, EndRound
+    PlayerTurn, PlayerCollect, CPUTurn, CPUCollect, RoundTeardown
 }

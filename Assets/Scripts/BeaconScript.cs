@@ -34,7 +34,7 @@ public class BeaconScript : MonoBehaviour {
     public virtual void Update() {
         Color ledColor = broadcasting ? COLOR_SUPERPURPLE : COLOR_SUPERGREEN;
         mrLED.GetPropertyBlock(block);
-        bool on = handheldsInRange.Count > 0;
+        bool on = handheldsInRange.Count > (totalScore > 0 ? 1 : 0);
         subgameEventTimer -= Time.deltaTime;
         broadcastSuccessTimer -= Time.deltaTime;
         // Blink on and off.

@@ -6,14 +6,15 @@ public class Subgame03Script : MonoBehaviour {
     static float LOSE_X = 7f;
     static float MAX_EXTENT_Y = 5.5f;
     static float SPEED_PLAYER = 6;
-    static float SPEED_ENEMY = 5, SPEED_ENEMY_INCREMENT = 0.2f, SPEED_ENEMY_XPAK_MULT = 1.5f;
+    static float SPEED_ENEMY = 3, SPEED_ENEMY_INCREMENT = 0.3f, SPEED_ENEMY_XPAK_MULT = 1.5f;
     static float BOUNCE_DX_MULT = -1.1f;
     static float BOUNCE_DY_MULT = 3f;
-    static float EXTENT_FUDGE = 0.25f;
-    static float GUN_COOLDOWN = 1;
-    static float ENEMY_STUN_TIME = 0.5f;
+    static float EXTENT_FUDGE = 0.5f;
+    static float GUN_COOLDOWN = 0.66f;
+    static float ENEMY_STUN_TIME = 2f;
 
     public GameObject prefabBullet;
+    public AudioClip sfxBouncePlayer, sfxBounceEnemy, sfxBounceWall, sfxPoint, sfxShoot, sfxHitBall, sfxHitEnemy;
 
     public Transform ball, paddlePlayer, paddleEnemy, gun;
 
@@ -53,6 +54,7 @@ public class Subgame03Script : MonoBehaviour {
         if (gunTimer <= 0 && subgame.GetKey(Key.Z) && subgame.HasXPak()) {
             Instantiate(prefabBullet, transform).GetComponent<Subgame03BulletScript>().Init(this);
             gunTimer = GUN_COOLDOWN;
+            subgame.PlaySFX(sfxShoot);
         }
 
         // Enemy paddle.
@@ -72,6 +74,7 @@ public class Subgame03Script : MonoBehaviour {
         if (ball.localPosition.x > -CONTACT_X && nextBallPosition.x <= -CONTACT_X) {
             if (IsWithinExtents(ball.localPosition.y, paddlePlayer)) {
                 PerformBounce(paddlePlayer);
+                subgame.PlaySFX(sfxBouncePlayer);
             }
         }
         if (ball.localPosition.x < -LOSE_X) {
@@ -81,18 +84,22 @@ public class Subgame03Script : MonoBehaviour {
         if (ball.localPosition.x < CONTACT_X && nextBallPosition.x >= CONTACT_X) {
             if (IsWithinExtents(ball.localPosition.y, paddleEnemy)) {
                 PerformBounce(paddleEnemy);
+                subgame.PlaySFX(sfxBounceEnemy);
             }
         }
         if (ball.localPosition.x > LOSE_X) {
             subgame.AddPoints(1);
             ResetBall(-1);
+            subgame.PlaySFX(sfxPoint);
         }
         // Move ball.
         ball.localPosition = ball.localPosition + vBall * Time.deltaTime;
         if (ball.localPosition.y <= -CONTACT_Y && vBall.y < 0) {
             vBall.y *= -1;
+            subgame.PlaySFX(sfxBounceWall);
         } else if (ball.localPosition.y >= CONTACT_Y && vBall.y > 0) {
             vBall.y *= -1;
+            subgame.PlaySFX(sfxBounceWall);
         }
     }
 
@@ -132,7 +139,13 @@ public class Subgame03Script : MonoBehaviour {
     }
 
     public void BulletHit(Transform target) {
-        if (target == ball) vBall.x += 0.2f;
-        if (target == paddleEnemy) enemyStunTimer = ENEMY_STUN_TIME;
+        if (target == ball) {
+            vBall.x += 0.2f;
+            subgame.PlaySFX(sfxHitBall);
+        }
+        if (target == paddleEnemy) {
+            enemyStunTimer = ENEMY_STUN_TIME;
+            subgame.PlaySFX(sfxHitEnemy);
+        }
     }
 }

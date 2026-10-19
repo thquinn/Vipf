@@ -16,14 +16,14 @@ public class SubgameBaseScript : MonoBehaviour {
     public GameObject gameOverContainer;
 
     [HideInInspector] public HandheldScript handheldScript;
+    AudioSource audioSourceBGM;
     [HideInInspector] public int score;
     [HideInInspector] public bool isGameOver;
+    Vector2? bgmLoopPoints;
 
-    void Start() {
-        
-    }
     public void Init(HandheldScript handheldScript) {
         this.handheldScript = handheldScript;
+        audioSourceBGM = handheldScript.audioSourceBGM;
     }
 
     void Update() {
@@ -32,6 +32,11 @@ public class SubgameBaseScript : MonoBehaviour {
         gameOverContainer.SetActive(isGameOver);
         if (handheldScript.isHeld && Keyboard.current.f1Key.wasPressedThisFrame) {
             AddPoints(1);
+        }
+        if (bgmLoopPoints.HasValue) {
+            if (audioSourceBGM.isPlaying && audioSourceBGM.time > bgmLoopPoints.Value.y) {
+                audioSourceBGM.time = bgmLoopPoints.Value.x;
+            }
         }
     }
 
@@ -42,6 +47,7 @@ public class SubgameBaseScript : MonoBehaviour {
     public void GameOver() {
         isGameOver = true;
         score = 0;
+        handheldScript.PlaySFXGameOver();
     }
     public bool ShouldRestart() {
         if (!isGameOver) return false;
@@ -88,11 +94,20 @@ public class SubgameBaseScript : MonoBehaviour {
     }
 
     public void PlayBGM(AudioClip bgm) {
-        handheldScript.audioSourceBGM.clip = bgm;
-        handheldScript.audioSourceBGM.Play();
+        if (handheldScript.audioSourceBGM.clip == bgm && handheldScript.audioSourceBGM.isPlaying) {
+            return;
+        }
+        audioSourceBGM.clip = bgm;
+        audioSourceBGM.Play();
+    }
+    public void StopBGM() {
+        audioSourceBGM.Stop();
+    }
+    public void SetBGMLoopPoints(Vector2 loopPoints) {
+        bgmLoopPoints = loopPoints;
     }
     public void PlaySFX(AudioClip sfx) {
-        handheldScript.audioSourceBGM.PlayOneShot(sfx);
+        handheldScript.audioSourceSFX.PlayOneShot(sfx);
     }
 
     public void EmitEvent(SubgameEvent e) {

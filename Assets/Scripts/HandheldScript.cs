@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 public class HandheldScript : GrabbableScript {
     public Sprite[] spriteSubgameIcons;
 
+    public AudioClip sfxGameOver;
+
     public SubgameBaseScript subgame;
     public Renderer screenRenderer;
     public SpriteRenderer srIcon;
@@ -66,6 +68,10 @@ public class HandheldScript : GrabbableScript {
             z = -magnitude;
         }
         return Quaternion.Euler(x, 0, z);
+    }
+
+    public void PlaySFXGameOver() {
+        audioSourceSFX.PlayOneShot(sfxGameOver);
     }
 
     public bool HasXPak() {

@@ -59,6 +59,9 @@ public class Subgame02Script : MonoBehaviour {
         null,
     };
 
+    public AudioClip bgm;
+    public AudioClip sfxRotateCW, sfxRotateCCW, sfxPieceLand, sfxLineClear;
+
     public Tilemap tilemap;
     public TileBase[] tiles;
     public Transform transformNextPreview;
@@ -82,12 +85,19 @@ public class Subgame02Script : MonoBehaviour {
         grid = new int[11, 22];
         bag = new();
         SpawnPiece();
+        subgame.PlayBGM(bgm);
     }
 
     void Update() {
         UpdateNextPreview();
-        if (subgame.ShouldRestart()) Restart();
-        if (subgame.isGameOver) return;
+        if (subgame.ShouldRestart()) {
+            Restart();
+            return;
+        }
+        if (subgame.isGameOver) {
+            subgame.StopBGM();
+            return;
+        }
 
         dropTimer -= Time.deltaTime;
 
@@ -154,6 +164,7 @@ public class Subgame02Script : MonoBehaviour {
         bag.Clear();
         FillBag();
         dropTimer = 1;
+        subgame.PlayBGM(bgm);
     }
 
     Vector2Int[] PieceCells(int type, Vector2Int position, int rotation) {
@@ -200,6 +211,7 @@ public class Subgame02Script : MonoBehaviour {
             if (Fits(pieceType, target, newRotation)) {
                 piecePosition = target;
                 pieceRotation = newRotation;
+                subgame.PlaySFX(direction == -1 ? sfxRotateCW : sfxRotateCCW);
                 return true;
             }
         }
@@ -220,6 +232,7 @@ public class Subgame02Script : MonoBehaviour {
             if (cell.y < 0) toppedOut = true;
             else grid[cell.x, cell.y] = pieceType;
         }
+        subgame.PlaySFX(sfxPieceLand);
         if (toppedOut) GameOver();
         else ClearFullRows();
         SpawnPiece();
@@ -236,7 +249,10 @@ public class Subgame02Script : MonoBehaviour {
             }
         }
         for (int y = 0; y < cleared; y++) ClearRow(y);
-        if (cleared > 0) subgame.score += LINE_CLEAR_SCORES[Mathf.Min(cleared, LINE_CLEAR_SCORES.Length - 1)];
+        if (cleared > 0) {
+            subgame.score += LINE_CLEAR_SCORES[Mathf.Min(cleared, LINE_CLEAR_SCORES.Length - 1)];
+            subgame.PlaySFX(sfxLineClear);
+        }
         if (cleared >= 4) subgame.EmitEvent(SubgameEvent.TetrisTetris);
         if (cleared >= 5) subgame.EmitEvent(SubgameEvent.TetrisPentris);
         if (cleared > 0 && containedX && !GridContains(PIECE_X)) subgame.EmitEvent(SubgameEvent.TetrisXClear);
