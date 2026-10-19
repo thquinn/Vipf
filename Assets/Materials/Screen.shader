@@ -73,6 +73,7 @@ Shader "thquinn/Screen"
                 col.rgb *= _Tint.rgb * _Brightness;
                 col.r *= 1 + _Glitch * 4;
                 col.b *= 1 + _Glitch * 4;
+                col.rgb += half3(.25, 0, .25) * _Glitch;
                 col.a = 1;
                 return col;
             }

@@ -10,7 +10,8 @@ public class Subgame04FanScript : MonoBehaviour {
     void Start() {
         if (Random.value < .5) {
             transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, 1);
-            force *= -1;
+        } else {
+            force *= -1; // these are now black holes sucking you in, instead of fans. oops!
         }
     }
 

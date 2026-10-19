@@ -119,7 +119,7 @@ Transform:
   m_GameObject: {fileID: 9105927838700067142}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -2}
+  m_LocalPosition: {x: 0, y: 4, z: -2}
   m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -197,10 +197,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2906a8e5bdd21534189c490cd79986af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  spritesFan: []
-  spritesWind: []
-  srFan: {fileID: 0}
-  srWind: {fileID: 0}
+  spritesFan:
+  - {fileID: 21300000, guid: c44d3a0640817004bb84e0d1fb12f760, type: 3}
+  - {fileID: 21300000, guid: 64cb7aa365d64b949b0fb3de4b16b90c, type: 3}
+  spritesWind:
+  - {fileID: 21300000, guid: a6eecef5051bb324d9f75bfc99de0cbe, type: 3}
+  - {fileID: 21300000, guid: e04e36c41c609b84198734ccb35eadd7, type: 3}
+  srFan: {fileID: 4668209142649929467}
+  srWind: {fileID: 6532782515459669487}
+  force: 10
   animSpeedFan: 8
   animSpeedWind: 2
 --- !u!61 &4625020624684594799

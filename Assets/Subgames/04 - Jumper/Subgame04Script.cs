@@ -4,13 +4,14 @@ using UnityEngine;
 public class Subgame04Script : MonoBehaviour {
     static int EVENT_SCORE_THRESHOLD = 20;
 
-    public GameObject prefabPlatform;
+    public GameObject prefabPlatform, prefabFan;
     public AudioClip bgm;
 
     public Subgame04PlayerScript playerScript;
     public float initialDY, dyAccel;
     public Vector2 basePlatformGap, maxPlatformGap;
     public float platformGapAccel;
+    public float fanGap;
     public float gameOverDelta;
     public float catchupDelta, catchupOffset, catchupTime;
     public float yPerScore;
@@ -20,13 +21,15 @@ public class Subgame04Script : MonoBehaviour {
 
     float y, dy, maxPlayerY;
     float vCatchup;
-    float platformGapT, nextPlatformY;
+    float platformGapT, nextPlatformY, nextFanY;
     List<Subgame04PlatformScript> platforms;
+    List<Subgame04FanScript> fans;
 
     void Start() {
         subgame = GetComponentInParent<SubgameBaseScript>();
         playerScript.Init(subgame);
         platforms = new();
+        fans = new();
         subgame.SetBGMLoopPoints(bgmLoopPoints);
         Restart();
     }
@@ -77,6 +80,17 @@ public class Subgame04Script : MonoBehaviour {
             platformScript.Init(platformPosition, width);
             platforms.Add(platformScript);
         }
+        while (nextFanY < y + 7) {
+            if (subgame.HasXPak()) {
+                Subgame04FanScript fan = Instantiate(prefabFan, transform).GetComponent<Subgame04FanScript>();
+                Vector3 position = fan.transform.localPosition;
+                position.y = nextFanY;
+                fan.transform.localPosition = position;
+                fans.Add(fan);
+                subgame.Glitch();
+            }
+            nextFanY += fanGap;
+        }
     }
 
     void Restart() {
@@ -87,8 +101,11 @@ public class Subgame04Script : MonoBehaviour {
         maxPlayerY = 0;
         playerScript.Restart();
         nextPlatformY = -3;
+        nextFanY = 5;
         foreach (var platform in platforms) if (platform != null) Destroy(platform.gameObject);
+        foreach (var fan in fans) if (fan != null) Destroy(fan.gameObject);
         platforms.Clear();
+        fans.Clear();
         subgame.PlayBGM(bgm);
     }
 }
