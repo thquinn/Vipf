@@ -82,6 +82,10 @@ public class Subgame02Script : MonoBehaviour {
 
     void Start() {
         subgame = GetComponentInParent<SubgameBaseScript>();
+    }
+    bool actuallyStarted;
+    void ActualStart() {
+        actuallyStarted = true;
         grid = new int[11, 22];
         bag = new();
         SpawnPiece();
@@ -89,6 +93,8 @@ public class Subgame02Script : MonoBehaviour {
     }
 
     void Update() {
+        if (subgame.isStartBlocked) return;
+        if (!actuallyStarted) ActualStart();
         UpdateNextPreview();
         if (subgame.ShouldRestart()) {
             Restart();

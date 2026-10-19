@@ -14,7 +14,7 @@ public class PhantomControllerScript : MonoBehaviour {
 
     void Update() {
         bool speedUp = Keyboard.current.f3Key.isPressed;
-        if (Time.time < 10) speedUp = !speedUp;
+        if (Time.time < 5) speedUp = !speedUp;
         PHANTOM_TIMESCALE = speedUp ? 10 : 1;
         bool beyond = PlayerScript.instance.transform.position.z > transform.position.z;
         transformPhantoms.gameObject.SetActive(!beyond);

@@ -38,11 +38,15 @@ public class Subgame01Script : MonoBehaviour {
 
     void Start() {
         subgame = GetComponentInParent<SubgameBaseScript>();
+    }
+    bool actuallyStarted;
+    void ActualStart() {
+        actuallyStarted = true;
         grid = new Subgame01GridState[10, 8];
         cellScripts = new Subgame01GridCellScript[10, 8];
         failIcons = new();
         notes = new();
-        
+
         audioSourceBGM = subgame.handheldScript?.audioSourceBGM;
         initialBGMVolume = audioSourceBGM.volume;
         audioSourceBGM.clip = bgm;
@@ -52,6 +56,8 @@ public class Subgame01Script : MonoBehaviour {
     }
 
     void Update() {
+        if (subgame.isStartBlocked) return;
+        if (!actuallyStarted) ActualStart();
         if (!subgame.isGameOver) {
             UpdateSelector();
             UpdateBeats();

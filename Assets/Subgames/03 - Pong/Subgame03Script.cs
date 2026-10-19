@@ -31,6 +31,7 @@ public class Subgame03Script : MonoBehaviour {
     }
 
     void Update() {
+        if (subgame.isStartBlocked) return;
         if (subgame.ShouldRestart()) {
             Restart();
             return;

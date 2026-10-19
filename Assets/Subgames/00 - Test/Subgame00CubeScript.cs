@@ -12,6 +12,7 @@ public class Subgame00CubeScript : MonoBehaviour {
     }
 
     void Update() {
+        if (subgame.isStartBlocked) return;
         if (!subgame.isGameOver) {
             if (subgame.GetKey(Key.LeftArrow)) {
                 transform.Rotate(0, Time.deltaTime * 60, 0, Space.World);

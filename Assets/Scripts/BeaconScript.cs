@@ -9,7 +9,10 @@ public class BeaconScript : MonoBehaviour {
     static Color COLOR_SUPERGREEN = new Color(3, 16, 0);
     static Color COLOR_SUPERPURPLE = new Color(10, 0, 10);
 
+    public AudioClip sfxActivate;
+
     public MeshRenderer mrLED;
+    public AudioSource audioSource;
     public SubgameID subgame;
     public int score, totalScore;
     public SubgameEvent subgameEvent;
@@ -22,6 +25,7 @@ public class BeaconScript : MonoBehaviour {
     HashSet<HandheldScript> handheldsInRange;
     float subgameEventTimer, broadcastSuccessTimer;
     MaterialPropertyBlock block;
+    bool lastActivated;
 
     void Start() {
         handheldsInRange = new();
@@ -38,10 +42,15 @@ public class BeaconScript : MonoBehaviour {
         subgameEventTimer -= Time.deltaTime;
         broadcastSuccessTimer -= Time.deltaTime;
         // Blink on and off.
-        if (Activated() && (Time.time % 0.5f) < 0.25f) on = false;
+        bool activated = Activated();
+        if (activated && (Time.time % 0.5f) < 0.25f) on = false;
         if ((BroadcastCheck() || broadcastSuccessTimer > 0  ) && (Time.time % 0.5f) < 0.25f) on = false;
         block.SetColor("_EmissionColor", on ? ledColor : Color.black);
         mrLED.SetPropertyBlock(block);
+        if (!lastActivated && activated) {
+            audioSource.PlayOneShot(sfxActivate);
+        }
+        lastActivated = activated;
     }
 
     public virtual bool Activated() {

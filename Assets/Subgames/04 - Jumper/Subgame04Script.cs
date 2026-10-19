@@ -27,6 +27,10 @@ public class Subgame04Script : MonoBehaviour {
 
     void Start() {
         subgame = GetComponentInParent<SubgameBaseScript>();
+    }
+    bool actuallyStarted;
+    void ActualStart() {
+        actuallyStarted = true;
         playerScript.Init(subgame);
         platforms = new();
         fans = new();
@@ -35,6 +39,8 @@ public class Subgame04Script : MonoBehaviour {
     }
 
     void Update() {
+        if (subgame.isStartBlocked) return;
+        if (!actuallyStarted) ActualStart();
         if (subgame.ShouldRestart()) {
             Restart();
             return;

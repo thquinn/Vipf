@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public class PlayerScript : MonoBehaviour {
     public static PlayerScript instance;
 
+    public AudioClip[] sfxSteps;
+
     static float MOVE_SPEED = 5;
     static float MOVE_DECAY = 10;
     static float LOOK_SENSITIVITY = 0.2f * (Application.platform == RuntimePlatform.WebGLPlayer ? 1 : 1);
@@ -15,6 +17,7 @@ public class PlayerScript : MonoBehaviour {
     static float VIGNETTE_MAX_INTENSITY = 0.6f;
     static Vector3 HEAD_GROUND_POSITION = new Vector3(-0.2f, 0.4f, 1f);
     static Quaternion HEAD_GROUND_ROTATION = Quaternion.Euler(0, 0, 90);
+    static float STEP_DISTANCE = 3f;
 
     public Transform transformHead, transformHandheldAnchor, transformHandheldSwivel;
     public Camera cam;
@@ -22,6 +25,7 @@ public class PlayerScript : MonoBehaviour {
     public LayerMask layerMaskGrab;
     public Volume globalVolume;
     public Image wipeImage;
+    public AudioSource audioSource;
     
     InputSystem_Actions input;
     Vector3 initialHeadPosition, vHead;
@@ -35,6 +39,8 @@ public class PlayerScript : MonoBehaviour {
     CutsceneState cutsceneState;
     float cutsceneTimer, wipe, vWipe, initialVignetteIntensity, vignetteIntensity, vVignette;
     Vignette vignette;
+    Vector3 lastPosition;
+    float stepDistance;
 
     void Start() {
         instance = this;
@@ -54,6 +60,7 @@ public class PlayerScript : MonoBehaviour {
             cutsceneState = CutsceneState.IntroRise;
             cutsceneTimer = 2;
         }
+        lastPosition = transformHead.position;
     }
 
     void Update() {
@@ -93,6 +100,14 @@ public class PlayerScript : MonoBehaviour {
             ref vSwivelRot,
             0.2f
         );
+        // Footsteps.
+        Vector3 delta = lastPosition - transform.position;
+        stepDistance += new Vector2(delta.x, delta.z).magnitude;
+        if (stepDistance >= STEP_DISTANCE) {
+            audioSource.PlayOneShot(sfxSteps[Random.Range(0, sfxSteps.Length)]);
+            stepDistance = stepDistance % STEP_DISTANCE;
+        }
+        lastPosition = transform.position;
     }
     void LateUpdate() {
         if (ControlsLocked()) return;
@@ -126,6 +141,7 @@ public class PlayerScript : MonoBehaviour {
             0,
             Mathf.Lerp(rb.linearVelocity.z, inputVelocity.z, t)
         );
+        if (rb.linearVelocity.sqrMagnitude < .5f) stepDistance = 0;
         Vector3 targetHeadPosition = Keyboard.current.leftCtrlKey.isPressed ? initialHeadPosition * .66f : initialHeadPosition;
         transformHead.localPosition = Vector3.SmoothDamp(transformHead.localPosition, targetHeadPosition, ref vHead, 0.2f);
     }

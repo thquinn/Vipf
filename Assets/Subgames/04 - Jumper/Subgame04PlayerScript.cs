@@ -25,11 +25,16 @@ public class Subgame04PlayerScript : MonoBehaviour {
     }
 
     void Update() {
+        if (subgame == null) subgame = GetComponentInParent<SubgameBaseScript>();
+        if (subgame.isStartBlocked) return;
         if (subgame.isGameOver) return;
         if (isGrounded) UpdateGrounded();
         UpdateSprite();
     }
     void FixedUpdate() {
+        if (subgame == null) subgame = GetComponentInParent<SubgameBaseScript>();
+        if (subgame.isStartBlocked) return;
+        if (subgame.isGameOver) return;
         if (!isGrounded) UpdateAir();
     }
     void UpdateGrounded() {

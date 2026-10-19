@@ -3,9 +3,12 @@ using UnityEngine;
 using UnityEngine.Splines;
 
 public class ShutterScript : MonoBehaviour {
+    public AudioClip sfxOpen;
+
     public BeaconScript beaconScript;
     public SplineContainer splineContainer;
     public Collider collidre;
+    public AudioSource audioSource;
     public GameObject slat;
     public int maxSlats;
     public float closedStart, closedEnd, openStart, openEnd;
@@ -24,7 +27,10 @@ public class ShutterScript : MonoBehaviour {
 
     void Update() {
         if (slats.Count < maxSlats) slats.Add(Instantiate(slat, transform));
-        if (beaconScript.Activated()) isOpen = true;
+        if (!isOpen && beaconScript.Activated()) {
+            isOpen = true;
+            audioSource.PlayOneShot(sfxOpen);
+        }
         collidre.enabled = !isOpen;
 
         startT = Mathf.SmoothDamp(startT, isOpen ? openStart : closedStart, ref startV, dampTime);
