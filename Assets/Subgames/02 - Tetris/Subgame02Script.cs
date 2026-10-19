@@ -304,7 +304,16 @@ public class Subgame02Script : MonoBehaviour {
         if (bag[bag.Count - 1] == PIECE_X) return false;
         if (GridContains(PIECE_X)) return false;
         bag[bag.Count - 1] = PIECE_X;
+        subgame.Glitch();
         return true;
+    }
+    public bool ReceiveBroadcastLongI() {
+        if (pieceType == PIECE_I) {
+            pieceType = PIECE_LONG_I;
+            subgame.Glitch();
+            return true;
+        }
+        return false;
     }
 
     bool GridContains(int value) {

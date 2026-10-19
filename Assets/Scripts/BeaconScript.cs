@@ -34,7 +34,7 @@ public class BeaconScript : MonoBehaviour {
     public virtual void Update() {
         Color ledColor = broadcasting ? COLOR_SUPERPURPLE : COLOR_SUPERGREEN;
         mrLED.GetPropertyBlock(block);
-        bool on = handheldsInRange.Count > (totalScore > 0 ? 1 : 0);
+        bool on = handheldsInRange.Where(h => h.hasBeenHeld).Count() > (totalScore > 0 ? 1 : 0);
         subgameEventTimer -= Time.deltaTime;
         broadcastSuccessTimer -= Time.deltaTime;
         // Blink on and off.
@@ -50,7 +50,7 @@ public class BeaconScript : MonoBehaviour {
         int scoreTally = 0, countWithScore = 0;
         foreach (HandheldScript handheld in handheldsInRange) {
             bool eventOK = subgameEvent == SubgameEvent.None || subgameEventTimer > 0;
-            if (handheld.subgame.score >= score && eventOK) {
+            if (totalScore == 0 && handheld.subgame.score >= score && eventOK) {
                 if (broadcastType != BroadcastType.None) {
                     Invoke("SwitchToBroadcast", 3);
                 }
@@ -109,12 +109,16 @@ public class BeaconScript : MonoBehaviour {
         bool result = false;
         foreach (HandheldScript handheld in handheldsInRange) {
             if (broadcastType == BroadcastType.TetrisX) result |= TetrisX(handheld.subgame.GetComponent<Subgame02Script>());
+            if (broadcastType == BroadcastType.TetrisLongI) result |= TetrisLongI(handheld.subgame.GetComponent<Subgame02Script>());
         }
         if (result) broadcastSuccessTimer = 1;
         return result;
     }
     bool TetrisX(Subgame02Script subgame02) {
         return subgame02.ReceiveBroadcastTetrisX();
+    }
+    bool TetrisLongI(Subgame02Script subgame02) {
+        return subgame02.ReceiveBroadcastLongI();
     }
 }
 

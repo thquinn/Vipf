@@ -6,12 +6,13 @@ public class Subgame03Script : MonoBehaviour {
     static float LOSE_X = 7f;
     static float MAX_EXTENT_Y = 5.5f;
     static float SPEED_PLAYER = 6;
-    static float SPEED_ENEMY = 3, SPEED_ENEMY_INCREMENT = 0.3f, SPEED_ENEMY_XPAK_MULT = 1.5f;
+    static float SPEED_ENEMY = 2.5f, SPEED_ENEMY_INCREMENT = 0.3f, SPEED_ENEMY_XPAK_MULT = 1.5f;
     static float BOUNCE_DX_MULT = -1.1f;
     static float BOUNCE_DY_MULT = 3f;
     static float EXTENT_FUDGE = 0.5f;
+    static float GUN_APPEAR_TIME = 3;
     static float GUN_COOLDOWN = 0.66f;
-    static float ENEMY_STUN_TIME = 2f;
+    static float ENEMY_STUN_TIME = 1.25f;
 
     public GameObject prefabBullet;
     public AudioClip sfxBouncePlayer, sfxBounceEnemy, sfxBounceWall, sfxPoint, sfxShoot, sfxHitBall, sfxHitEnemy;
@@ -22,6 +23,7 @@ public class Subgame03Script : MonoBehaviour {
     Vector3 vBall;
     float gunTimer;
     float enemyStunTimer;
+    float t;
 
     void Start() {
         subgame = GetComponentInParent<SubgameBaseScript>();
@@ -34,6 +36,13 @@ public class Subgame03Script : MonoBehaviour {
             return;
         }
         if (subgame.isGameOver) return;
+
+        float oldT = t;
+        t += Time.deltaTime;
+        if (subgame.HasXPak() && oldT < GUN_APPEAR_TIME && t >= GUN_APPEAR_TIME) {
+            subgame.Glitch();
+        }
+        bool hasGun = subgame.HasXPak() && t >= GUN_APPEAR_TIME;
 
         // Special event.
         if (subgame.GetKey(Key.Z) && subgame.GetKey(Key.X)) {
@@ -48,10 +57,10 @@ public class Subgame03Script : MonoBehaviour {
         ClampPaddlePosition(paddlePlayer);
 
         // Player shooting.
-        gun.gameObject.SetActive(subgame.HasXPak());
+        gun.gameObject.SetActive(hasGun);
         gun.localPosition = paddlePlayer.localPosition;
         gunTimer -= Time.deltaTime;
-        if (gunTimer <= 0 && subgame.GetKey(Key.Z) && subgame.HasXPak()) {
+        if (gunTimer <= 0 && subgame.GetKey(Key.Z) && hasGun) {
             Instantiate(prefabBullet, transform).GetComponent<Subgame03BulletScript>().Init(this);
             gunTimer = GUN_COOLDOWN;
             subgame.PlaySFX(sfxShoot);
@@ -104,13 +113,14 @@ public class Subgame03Script : MonoBehaviour {
     }
 
     void Restart() {
+        t = 0;
         paddlePlayer.localPosition = new Vector3(paddlePlayer.localPosition.x, 0, 0);
         paddleEnemy.localPosition = new Vector3(paddleEnemy.localPosition.x, 0, 0);
         ResetBall(1);
     }
     void ResetBall(int direction) {
         ball.localPosition = Vector3.zero;
-        vBall = new Vector3(3 * direction, 1);
+        vBall = new Vector3(4 * direction, Random.Range(-2f, 2f));
     }
 
     void ClampPaddlePosition(Transform paddle) {
@@ -140,7 +150,7 @@ public class Subgame03Script : MonoBehaviour {
 
     public void BulletHit(Transform target) {
         if (target == ball) {
-            vBall.x += 0.2f;
+            vBall.x += 1f;
             subgame.PlaySFX(sfxHitBall);
         }
         if (target == paddleEnemy) {

@@ -96,6 +96,7 @@ public class PlayerScript : MonoBehaviour {
                 handheldInitialRotation = grabbedGrabbable.transform.rotation;
                 handheldGrabAnimT = 0;
                 grabbedGrabbable.isHeld = true;
+                grabbedGrabbable.hasBeenHeld = true;
             }
         }
     }

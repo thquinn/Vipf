@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,10 +16,12 @@ public class Subgame04PlayerScript : MonoBehaviour {
     Vector2 initialPosition;
     bool isGrounded;
     float lastDX, superjumpTimer;
+    List<Subgame04FanScript> fans;
 
     public void Init(SubgameBaseScript subgame) {
         this.subgame = subgame;
         initialPosition = transform.localPosition;
+        fans = new();
     }
 
     void Update() {
@@ -50,6 +53,9 @@ public class Subgame04PlayerScript : MonoBehaviour {
         float dx = GetDX();
         if (GetDX() != Mathf.Sign(rb2d.linearVelocity.x)) dx *= stoppageMult;
         rb2d.linearVelocity += new Vector2(dx * horizontalAccel * Time.fixedDeltaTime, 0);
+        foreach (Subgame04FanScript fan in fans) {
+            rb2d.linearVelocity += new Vector2(fan.force, 0) * Time.fixedDeltaTime;
+        }
     }
     void UpdateSprite() {
         if (isGrounded) sr.sprite = spriteIdle;
@@ -78,6 +84,7 @@ public class Subgame04PlayerScript : MonoBehaviour {
         lastDX = 0;
         superjumpTimer = 0;
         sr.sprite = spriteIdle;
+        fans.Clear();
     }
 
     private void OnCollisionEnter2D(Collision2D collision) {
@@ -88,5 +95,15 @@ public class Subgame04PlayerScript : MonoBehaviour {
         rb2d.bodyType = RigidbodyType2D.Kinematic;
         rb2d.position = new Vector2(rb2d.position.x, collision.transform.position.y + 15 / 16f);
         subgame.PlaySFX(sfxLand);
+    }
+    private void OnTriggerEnter2D(Collider2D collision) {
+        if (collision.tag == "Wind") {
+            fans.Add(collision.transform.GetComponent<Subgame04FanScript>());
+        }
+    }
+    private void OnTriggerExit2D(Collider2D collision) {
+        if (collision.tag == "Wind") {
+            fans.Remove(collision.transform.GetComponent<Subgame04FanScript>());
+        }
     }
 }

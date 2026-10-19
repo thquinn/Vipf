@@ -56,6 +56,14 @@ public static class Util {
         currentVelocity = FromVector4(velocityVec);
         return Normalize(FromVector4(result));
     }
+    public static float SmallAngle(Quaternion a, Quaternion b) {
+        // Flip sign if needed so we measure along the short path (q and -q are the same rotation)
+        if (Quaternion.Dot(a, b) < 0f) {
+            b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
+        }
+        var diff = new Vector4(b.x - a.x, b.y - a.y, b.z - a.z, b.w - a.w);
+        return 2f * diff.magnitude * Mathf.Rad2Deg;
+    }
 }
 
 public static class ListExtensions {

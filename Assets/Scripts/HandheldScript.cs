@@ -14,23 +14,26 @@ public class HandheldScript : GrabbableScript {
     public AudioSource audioSourceBGM, audioSourceSFX;
     public XPortScript xPortScript;
 
+    MaterialPropertyBlock block;
     public SubgameID subgameID;
     RenderTexture rt;
     Quaternion vRotDPad;
     Vector3 vZButton, vXButton;
     float initialButtonY;
+    float glitch, vGlitch;
 
     void Start() {
         // Set up screen.
         subgame.Init(this);
         rt = new RenderTexture(240, 180, 24, RenderTextureFormat.ARGB32) {
             filterMode = FilterMode.Point,
-            useMipMap = false
+            useMipMap = false,
+            wrapMode = TextureWrapMode.Repeat,
         };
         rt.Create();
         subgame.cam.gameObject.SetActive(true);
         subgame.cam.targetTexture = rt;
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        block = new MaterialPropertyBlock();
         screenRenderer.GetPropertyBlock(block);
         block.SetTexture("_BaseMap", rt);
         screenRenderer.SetPropertyBlock(block);
@@ -51,6 +54,11 @@ public class HandheldScript : GrabbableScript {
         Vector3 targetXPosition = transformXButton.localPosition;
         targetXPosition.y = initialButtonY - (Keyboard.current.xKey.isPressed ? magnitude : 0);
         transformXButton.localPosition = Vector3.SmoothDamp(transformXButton.localPosition, targetXPosition, ref vXButton, 0.05f);
+        // Glitch.
+        glitch = Mathf.SmoothDamp(glitch, 0, ref vGlitch, 0.01f);
+        screenRenderer.GetPropertyBlock(block);
+        block.SetFloat("_Glitch", glitch);
+        screenRenderer.SetPropertyBlock(block);
     }
 
     Quaternion GetTargetDPadRotation() {
@@ -72,6 +80,10 @@ public class HandheldScript : GrabbableScript {
 
     public void PlaySFXGameOver() {
         audioSourceSFX.PlayOneShot(sfxGameOver);
+    }
+    public void Glitch() {
+        glitch = 1;
+        vGlitch = 0;
     }
 
     public bool HasXPak() {

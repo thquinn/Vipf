@@ -7,5 +7,5 @@ public class GrabbableScript : MonoBehaviour {
     public Vector3 GrabbedPositionOffset() { return posOffset; }
     public Quaternion GrabbedRotationOffset() { return rotOffset; }
 
-    [HideInInspector] public bool isHeld;
+    [HideInInspector] public bool isHeld, hasBeenHeld;
 }

@@ -19,6 +19,7 @@ public class SubgameBaseScript : MonoBehaviour {
     AudioSource audioSourceBGM;
     [HideInInspector] public int score;
     [HideInInspector] public bool isGameOver;
+    float gameOverTimer;
     Vector2? bgmLoopPoints;
 
     public void Init(HandheldScript handheldScript) {
@@ -33,6 +34,7 @@ public class SubgameBaseScript : MonoBehaviour {
         if (handheldScript.isHeld && Keyboard.current.f1Key.wasPressedThisFrame) {
             AddPoints(1);
         }
+        gameOverTimer -= Time.deltaTime;
         if (bgmLoopPoints.HasValue) {
             if (audioSourceBGM.isPlaying && audioSourceBGM.time > bgmLoopPoints.Value.y) {
                 audioSourceBGM.time = bgmLoopPoints.Value.x;
@@ -47,10 +49,12 @@ public class SubgameBaseScript : MonoBehaviour {
     public void GameOver() {
         isGameOver = true;
         score = 0;
+        gameOverTimer = 1;
         handheldScript.PlaySFXGameOver();
     }
     public bool ShouldRestart() {
         if (!isGameOver) return false;
+        if (gameOverTimer > 0) return false;
         foreach (Key key in ANY_KEY) {
             if (GetKeyDown(key)) {
                 isGameOver = false;
@@ -108,6 +112,9 @@ public class SubgameBaseScript : MonoBehaviour {
     }
     public void PlaySFX(AudioClip sfx) {
         handheldScript.audioSourceSFX.PlayOneShot(sfx);
+    }
+    public void Glitch() {
+        handheldScript.Glitch();
     }
 
     public void EmitEvent(SubgameEvent e) {

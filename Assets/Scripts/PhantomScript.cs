@@ -16,7 +16,9 @@ public class PhantomScript : MonoBehaviour {
         transform.localRotation = flip ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;
         float dx = Random.Range(speedRange.x, speedRange.y) * (flip ? -1 : 1);
         velocity = new Vector3(dx, 0, 0);
-        audioSource.time = Random.Range(0, audioSource.clip.length - 1);
+        if (audioSource != null) {
+            audioSource.time = Random.Range(0, audioSource.clip.length - 1);
+        }
         if (umbrella != null && Random.value < .25f) umbrella.SetActive(false);
     }
 
