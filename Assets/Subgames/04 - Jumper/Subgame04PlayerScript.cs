@@ -7,7 +7,7 @@ public class Subgame04PlayerScript : MonoBehaviour {
     public SpriteRenderer sr;
     public Collider2D collidre;
     public Rigidbody2D rb2d;
-    public float jumpSpeed, gravity, gravityFall, horizontalAccel;
+    public float jumpSpeed, gravity, gravityFall, horizontalInit, horizontalAccel, stoppageMult;
     public float superjumpWindow, superjumpMinSpeed, superjumpMultiplier;
 
     SubgameBaseScript subgame;
@@ -38,15 +38,15 @@ public class Subgame04PlayerScript : MonoBehaviour {
                 dy += Mathf.Abs(lastDX) * superjumpMultiplier;
                 // TODO: Experiment with reducing gravity.
             }
-            rb2d.linearVelocity = new Vector2(0, dy);
+            rb2d.linearVelocity = new Vector2(horizontalInit * GetDX(), dy);
         }
         superjumpTimer -= Time.deltaTime;
     }
     void UpdateAir() {
         rb2d.gravityScale = subgame.GetKey(Key.Z) ? gravity : gravityFall;
         if (rb2d.linearVelocity.y <= 0) collidre.enabled = true;
-        int dx = GetDX();
-        if (dx != Mathf.Sign(rb2d.linearVelocity.x)) dx *= 2;
+        float dx = GetDX();
+        if (GetDX() != Mathf.Sign(rb2d.linearVelocity.x)) dx *= stoppageMult;
         rb2d.linearVelocity += new Vector2(dx * horizontalAccel * Time.fixedDeltaTime, 0);
     }
     void UpdateSprite() {

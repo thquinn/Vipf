@@ -7,8 +7,9 @@ public class Subgame04Script : MonoBehaviour {
     public GameObject prefabPlatform;
 
     public Subgame04PlayerScript playerScript;
-    public float initialDY;
-    public Vector2 basePlatformGap;
+    public float initialDY, dyAccel;
+    public Vector2 basePlatformGap, maxPlatformGap;
+    public float platformGapAccel;
     public float gameOverDelta;
     public float catchupDelta, catchupOffset, catchupTime;
     public float yPerScore;
@@ -17,7 +18,7 @@ public class Subgame04Script : MonoBehaviour {
 
     float y, dy, maxPlayerY;
     float vCatchup;
-    float nextPlatformY;
+    float platformGapT, nextPlatformY;
     List<Subgame04PlatformScript> platforms;
 
     void Start() {
@@ -34,9 +35,12 @@ public class Subgame04Script : MonoBehaviour {
         }
         if (subgame.isGameOver) return;
 
+        dy += dyAccel * Time.deltaTime;
         y += dy * Time.deltaTime;
         subgame.cam.transform.localPosition = new Vector3(0, y, -10);
         maxPlayerY = Mathf.Max(maxPlayerY, playerScript.transform.localPosition.y);
+
+        platformGapT = Mathf.Clamp01(platformGapT + platformGapAccel * Time.deltaTime);
         int previousScore = subgame.score;
         subgame.score = Mathf.Max(subgame.score, Mathf.CeilToInt(maxPlayerY / yPerScore));
         if (previousScore < EVENT_SCORE_THRESHOLD && subgame.score >= EVENT_SCORE_THRESHOLD) {
@@ -57,7 +61,8 @@ public class Subgame04Script : MonoBehaviour {
         // Spawn platforms.
         while (nextPlatformY < y + 10) {
             // Note: 4 is about as high as the player can jump.
-            nextPlatformY += Random.Range(basePlatformGap.x, basePlatformGap.y);
+            Vector2 platformGap = Vector2.Lerp(basePlatformGap, maxPlatformGap, platformGapT);
+            nextPlatformY += Random.Range(platformGap.x, platformGap.y);
             float width = 6;
             float radius = 7 - width / 4;
             float x = Random.Range(-radius, radius);
@@ -72,6 +77,7 @@ public class Subgame04Script : MonoBehaviour {
         y = 0;
         subgame.cam.transform.localPosition = new Vector3(0, 0, -10);
         dy = initialDY;
+        platformGapT = 0;
         maxPlayerY = 0;
         playerScript.Restart();
         nextPlatformY = -3;
