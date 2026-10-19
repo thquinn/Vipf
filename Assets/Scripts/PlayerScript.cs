@@ -1,5 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.UI;
 
 public class PlayerScript : MonoBehaviour {
     public static PlayerScript instance;
@@ -7,18 +10,31 @@ public class PlayerScript : MonoBehaviour {
     static float MOVE_SPEED = 5;
     static float MOVE_DECAY = 10;
     static float LOOK_SENSITIVITY = 0.2f * (Application.platform == RuntimePlatform.WebGLPlayer ? 1 : 1);
+    static Quaternion SWIVEL_DOWN_POSITION = Quaternion.Euler(30, 0, 0);
+    static float NO_DUCK_TIME = 2;
+    static float VIGNETTE_MAX_INTENSITY = 0.6f;
+    static Vector3 HEAD_GROUND_POSITION = new Vector3(-0.2f, 0.4f, 1f);
+    static Quaternion HEAD_GROUND_ROTATION = Quaternion.Euler(0, 0, 90);
 
-    public Transform transformHead, transformHandheldAnchor;
+    public Transform transformHead, transformHandheldAnchor, transformHandheldSwivel;
     public Camera cam;
     public Rigidbody rb;
     public LayerMask layerMaskGrab;
+    public Volume globalVolume;
+    public Image wipeImage;
     
     InputSystem_Actions input;
     Vector3 initialHeadPosition, vHead;
-    public GrabbableScript grabbedGrabbable;
+    [HideInInspector] public GrabbableScript grabbedGrabbable;
     Vector3 handheldInitialPosition;
     Quaternion handheldInitialRotation;
     float handheldGrabAnimT;
+    [HideInInspector] public bool duckGrabbable; // swivel the grabbed object down while they're trying to move or look
+    Quaternion vSwivelRot, vHeadRot;
+    float noDuckTimer;
+    CutsceneState cutsceneState;
+    float cutsceneTimer, wipe, vWipe, initialVignetteIntensity, vignetteIntensity, vVignette;
+    Vignette vignette;
 
     void Start() {
         instance = this;
@@ -26,15 +42,64 @@ public class PlayerScript : MonoBehaviour {
         input.Player.Enable();
         Cursor.lockState = CursorLockMode.Locked;
         initialHeadPosition = transformHead.localPosition;
+        if (!globalVolume.profile.TryGet(out vignette)) {
+            Debug.Log("Failed to get vignette.");
+        }
+        initialVignetteIntensity = vignette.intensity.value;
+        if (!Application.isEditor) {
+            transformHead.localPosition = HEAD_GROUND_POSITION;
+            transformHead.localRotation = HEAD_GROUND_ROTATION;
+            wipe = 1;
+            vignetteIntensity = VIGNETTE_MAX_INTENSITY;
+            cutsceneState = CutsceneState.IntroRise;
+            cutsceneTimer = 2;
+        }
     }
 
     void Update() {
+        // Cutscenes.
+        wipeImage.SetAlpha(wipe);
+        vignette.intensity.value = vignetteIntensity;
+        if (cutsceneTimer > 0) {
+            cutsceneTimer -= Time.deltaTime;
+        } else if (cutsceneState == CutsceneState.IntroRise) {
+            transformHead.localPosition = Vector3.SmoothDamp(transformHead.localPosition, initialHeadPosition, ref vHead, 2f);
+            transformHead.localRotation = Util.SmoothDampQuaternion(transformHead.localRotation, Quaternion.identity, ref vHeadRot, 2f);
+            wipe = Mathf.SmoothDamp(wipe, 0, ref vWipe, 2f);
+            vignetteIntensity = Mathf.SmoothDamp(vignetteIntensity, initialVignetteIntensity, ref vVignette, 2f);
+            if (wipe < 0.01f) {
+                transformHead.localRotation = Quaternion.identity;
+                wipe = 0;
+                vignetteIntensity = initialVignetteIntensity;
+                cutsceneState = CutsceneState.None;
+            }
+        } else if (cutsceneState == CutsceneState.OutroVignette) {
+            vignetteIntensity = Mathf.SmoothDamp(vignetteIntensity, VIGNETTE_MAX_INTENSITY, ref vVignette, 4f);
+        } else if (cutsceneState == CutsceneState.OutroFall) {
+            transformHead.localPosition = Vector3.SmoothDamp(transformHead.localPosition, HEAD_GROUND_POSITION, ref vHead, 3f);
+            transformHead.localRotation = Util.SmoothDampQuaternion(transformHead.localRotation, HEAD_GROUND_ROTATION, ref vHeadRot, 3f);
+            wipe = Mathf.SmoothDamp(wipe, 1, ref vWipe, 2f);
+            if (wipe > .999f) Application.Quit();
+        }
+
+        if (ControlsLocked()) return;
         UpdateLook();
+        // Swiveling the grabbable down.
+        noDuckTimer -= Time.deltaTime;
+        if (grabbedGrabbable == null) duckGrabbable = false;
+        transformHandheldSwivel.localRotation = Util.SmoothDampQuaternion(
+            transformHandheldSwivel.localRotation,
+            duckGrabbable ? SWIVEL_DOWN_POSITION : Quaternion.identity,
+            ref vSwivelRot,
+            0.2f
+        );
     }
     void LateUpdate() {
+        if (ControlsLocked()) return;
         UpdateGrab();
     }
     void FixedUpdate() {
+        if (ControlsLocked()) return;
         UpdateVelocity();
     }
 
@@ -47,11 +112,13 @@ public class PlayerScript : MonoBehaviour {
         }
         thetaX = Mathf.Clamp(thetaX - mouseDelta.y, -90, 90);
         cam.transform.localRotation = Quaternion.Euler(thetaX, 0, 0);
+        if (mouseDelta != Vector2.zero) DuckGrabbed();
     }
     void UpdateVelocity() {
         if (rb.isKinematic) return;
         Vector2 move = input.Player.Move.ReadValue<Vector2>();
         Vector3 inputVelocity = transformHead.forward * move.y * MOVE_SPEED + transformHead.right * move.x * MOVE_SPEED;
+        if (inputVelocity != Vector3.zero) DuckGrabbed();
         if (Keyboard.current.leftShiftKey.isPressed) inputVelocity *= 2;
         float t = 1f - Mathf.Exp(-MOVE_DECAY * Time.fixedDeltaTime);
         rb.linearVelocity = new Vector3(
@@ -76,10 +143,11 @@ public class PlayerScript : MonoBehaviour {
         // Grabbing and dropping.
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
         if (grabbedGrabbable != null) {
-            // Drop.
-            grabbedGrabbable.GetComponent<Rigidbody>().isKinematic = false;
-            grabbedGrabbable.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward * 2;
-            Release();
+            if (duckGrabbable) {
+                UnduckGrabbed();
+            } else {
+                Drop();
+            }
         } else {
             // Grab.
             float dotUp = Vector3.Dot(cam.transform.forward, Vector3.up);
@@ -98,8 +166,15 @@ public class PlayerScript : MonoBehaviour {
                 handheldGrabAnimT = 0;
                 grabbedGrabbable.isHeld = true;
                 grabbedGrabbable.hasBeenHeld = true;
+                UnduckGrabbed();
             }
         }
+    }
+    void Drop() {
+        if (grabbedGrabbable == null) return;
+        grabbedGrabbable.GetComponent<Rigidbody>().isKinematic = false;
+        grabbedGrabbable.GetComponent<Rigidbody>().linearVelocity = cam.transform.forward * 2;
+        Release();
     }
     void Release() {
         grabbedGrabbable.isHeld = false;
@@ -108,4 +183,30 @@ public class PlayerScript : MonoBehaviour {
     public void ReleaseIfHolding(GrabbableScript grabbable) {
         if (grabbedGrabbable == grabbable) Release();
     }
+
+    void DuckGrabbed() {
+        if (noDuckTimer > 0) return;
+        duckGrabbable = true;
+    }
+    public void UnduckGrabbed() {
+        duckGrabbable = false;
+        noDuckTimer = NO_DUCK_TIME;
+    }
+
+    bool ControlsLocked() {
+        return cutsceneState == CutsceneState.IntroRise || cutsceneState == CutsceneState.OutroFall;
+    }
+    public void TriggerOutroVignette() {
+        if (cutsceneState >= CutsceneState.OutroVignette) return;
+        cutsceneState = CutsceneState.OutroVignette;
+    }
+    public void TriggerOutroFall() {
+        if (cutsceneState >= CutsceneState.OutroFall) return;
+        Drop();
+        cutsceneState = CutsceneState.OutroFall;
+    }
+}
+
+enum CutsceneState {
+    None, IntroRise, OutroVignette, OutroFall
 }

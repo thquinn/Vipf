@@ -13,7 +13,9 @@ public class PhantomControllerScript : MonoBehaviour {
     float timerPedestrian, timerCar;
 
     void Update() {
-        PHANTOM_TIMESCALE = Keyboard.current.f3Key.isPressed ? 10 : 1;
+        bool speedUp = Keyboard.current.f3Key.isPressed;
+        if (Time.time < 10) speedUp = !speedUp;
+        PHANTOM_TIMESCALE = speedUp ? 10 : 1;
         bool beyond = PlayerScript.instance.transform.position.z > transform.position.z;
         transformPhantoms.gameObject.SetActive(!beyond);
         timerPedestrian -= Time.deltaTime * PHANTOM_TIMESCALE;

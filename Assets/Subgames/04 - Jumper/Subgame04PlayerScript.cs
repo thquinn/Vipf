@@ -25,6 +25,7 @@ public class Subgame04PlayerScript : MonoBehaviour {
     }
 
     void Update() {
+        if (subgame.isGameOver) return;
         if (isGrounded) UpdateGrounded();
         UpdateSprite();
     }

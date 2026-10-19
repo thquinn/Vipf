@@ -55,7 +55,7 @@ public class HandheldScript : GrabbableScript {
         targetXPosition.y = initialButtonY - (Keyboard.current.xKey.isPressed ? magnitude : 0);
         transformXButton.localPosition = Vector3.SmoothDamp(transformXButton.localPosition, targetXPosition, ref vXButton, 0.05f);
         // Glitch.
-        glitch = Mathf.SmoothDamp(glitch, 0, ref vGlitch, 0.01f);
+        glitch = Mathf.SmoothDamp(glitch, 0, ref vGlitch, 0.04f);
         screenRenderer.GetPropertyBlock(block);
         block.SetFloat("_Glitch", glitch);
         screenRenderer.SetPropertyBlock(block);

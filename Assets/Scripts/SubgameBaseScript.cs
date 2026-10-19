@@ -11,6 +11,8 @@ public class SubgameBaseScript : MonoBehaviour {
 
     static Key[] ANY_KEY = new Key[] { Key.LeftArrow, Key.RightArrow, Key.UpArrow, Key.DownArrow, Key.Z, Key.X };
 
+    public AudioClip sfxGlitch;
+
     public Camera cam;
     public TMP_Text tmpScore, tmpGameOver;
     public GameObject gameOverContainer;
@@ -67,6 +69,8 @@ public class SubgameBaseScript : MonoBehaviour {
     public bool GetKey(Key key) {
         Assert.IsTrue(ANY_KEY.Contains(key));
         if (!handheldScript.isHeld) return false;
+        bool ret = Keyboard.current[key].isPressed;
+        if (ret) PlayerScript.instance.UnduckGrabbed();
         return Keyboard.current[key].isPressed;
     }
     Dictionary<Key, float> keyPressTimes = new();
@@ -78,7 +82,7 @@ public class SubgameBaseScript : MonoBehaviour {
             keyPressTimes.Remove(key);
             return false;
         }
-        if (!Keyboard.current[key].isPressed) {
+        if (!GetKey(key)) {
             keyPressTimes.Remove(key);
             return false;
         }
@@ -115,6 +119,7 @@ public class SubgameBaseScript : MonoBehaviour {
     }
     public void Glitch() {
         handheldScript.Glitch();
+        PlaySFX(sfxGlitch);
     }
 
     public void EmitEvent(SubgameEvent e) {

@@ -39,10 +39,9 @@ public class TapePlayerScript : MonoBehaviour {
             }
         }
         if (state == TapePlayerState.Playing && !audioSource.isPlaying) {
-            state = TapePlayerState.Stopping;
-            stateTimer = 1;
-            if (audioSource.clip == finalClip) {
-                Invoke("Quit", 2);
+            if (audioSource.clip != finalClip) {
+                state = TapePlayerState.Stopping;
+                stateTimer = 1;
             }
         }
         if (stateTimer <= 0) {
@@ -76,6 +75,15 @@ public class TapePlayerScript : MonoBehaviour {
         }
         block.SetColor("_EmissionColor", ledColor);
         mrLED.SetPropertyBlock(block);
+
+        // Cutscenes.
+        if (audioSource.clip == finalClip && audioSource.isPlaying) {
+            if (audioSource.time > 48) {
+                PlayerScript.instance.TriggerOutroFall();
+            } else if (audioSource.time > 38) {
+                PlayerScript.instance.TriggerOutroVignette();
+            }
+        }
     }
 
     private void OnTriggerEnter(Collider other) {

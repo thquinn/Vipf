@@ -13,3 +13,9 @@ PresetManager:
     - m_Preset: {fileID: 2655988077585873504, guid: f7ebe2caa69ea9c42bda57986ec1fd0d, type: 2}
       m_Filter: glob:"Assets/Subgames/**/*.png"
       m_Disabled: 0
+    - m_Preset: {fileID: 2655988077585873504, guid: 96c38975c9a2d5240902ec4f3c102b47, type: 2}
+      m_Filter: glob:"Assets/Sprites/Post-its/*.png"
+      m_Disabled: 0
+    - m_Preset: {fileID: 2655988077585873504, guid: bd7c5a685fc528040a732a95216d8883, type: 2}
+      m_Filter: glob:"Assets/Sprites/Tape Labels/*.png"
+      m_Disabled: 0
